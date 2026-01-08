@@ -165,10 +165,10 @@ export default function CustomersPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-gray-600">
-                    {customer.user_orders} orders
+                    {customer.total_orders} orders
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap font-medium text-[#2C1810]">
-                    {customer.spent}
+                    {customer.total_spent}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
