@@ -2,86 +2,84 @@
 
 import { useState } from "react";
 import { Search, Filter, Mail, MoreHorizontal, User } from "lucide-react";
-import { useUser } from "@clerk/nextjs";
-import { supabase } from "@/lib/supabaseClient";
-import { useEffect } from "react";
+// import { useUser } from "@clerk/nextjs";
+// import { supabase } from "@/lib/supabaseClient";
+// import { useEffect } from "react";
 export default function CustomersPage() {
-  const { user, isLoaded } = useUser(); // Clerk user
+  // const { user, isLoaded } = useUser(); // Clerk user
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // const [loading, setLoading] = useState(true);
+  // const [error, setError] = useState(null);
 
-  // 1️⃣ Sync current user to Supabase
-  useEffect(() => {
-    if (!isLoaded || !user) return;
+  // useEffect(() => {
+  //   if (!isLoaded || !user) return;
 
-    const email = user.emailAddresses?.[0]?.emailAddress;
-    if (!email) return;
+  //   const email = user.emailAddresses?.[0]?.emailAddress;
+  //   if (!email) return;
 
-    const syncUser = async () => {
-      try {
-        // Check if user exists
-        const { data: existingUser } = await supabase
-          .from("users")
-          .select("id")
-          .eq("user_email", email)
-          .single();
+  //   const syncUser = async () => {
+  //     try {
+  //       // Check if user exists
+  //       const { data: existingUser } = await supabase
+  //         .from("users")
+  //         .select("id")
+  //         .eq("user_email", email)
+  //         .single();
 
-        if (!existingUser) {
-          // Insert new user
-          const { error: insertError } = await supabase.from("users").insert([
-            {
-              id: user.id,
-              user_firstname: user.firstName || "",
-              user_lastname: user.lastName || "",
-              user_email: email,
-              user_role: "user",
-              total_orders: 0,
-              total_spent: 0,
-            },
-          ]);
+  //       if (!existingUser) {
+  //         // Insert new user
+  //         const { error: insertError } = await supabase.from("users").insert([
+  //           {
+  //             id: user.id,
+  //             user_firstname: user.firstName || "",
+  //             user_lastname: user.lastName || "",
+  //             user_email: email,
+  //             user_role: "user",
+  //             total_orders: 0,
+  //             total_spent: 0,
+  //           },
+  //         ]);
 
-          if (insertError) {
-            console.error("Error inserting user:", insertError.message);
-          }
-        }
-      } catch (err) {
-        console.error("Error syncing user:", err);
-      }
-    };
+  //         if (insertError) {
+  //           console.error("Error inserting user:", insertError.message);
+  //         }
+  //       }
+  //     } catch (err) {
+  //       console.error("Error syncing user:", err);
+  //     }
+  //   };
 
-    syncUser();
-  }, [user, isLoaded]);
+  //   syncUser();
+  // }, [user, isLoaded]);
 
-  // 2️⃣ Fetch all users from Supabase
-  useEffect(() => {
-    const fetchUsers = async () => {
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from("users")
-          .select("*")
-          .order("id", { ascending: true });
+  // useEffect(() => {
+  //   const fetchUsers = async () => {
+  //     setLoading(true);
+  //     try {
+  //       const { data, error } = await supabase
+  //         .from("users")
+  //         .select("*")
+  //         .order("id", { ascending: true });
 
-        if (error) throw error;
+  //       if (error) throw error;
 
-        setUsers(data || []);
-      } catch (err) {
-        console.error("Error fetching users:", err);
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  //       setUsers(data || []);
+  //     } catch (err) {
+  //       console.error("Error fetching users:", err);
+  //       setError(err);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchUsers();
-  }, []);
+  //   fetchUsers();
+  // }, []);
 
   // 3️⃣ Render
-  if (!isLoaded) return <p>Loading user...</p>;
-  if (loading) return <p>Loading users...</p>;
-  if (error) return <p>Error: {error.message}</p>;
-  if (users.length === 0) return <p>No users found.</p>;
+  // if (!isLoaded) return <p>Loading user...</p>;
+  // if (loading) return <p>Loading users...</p>;
+  // if (error) return <p>Error: {error.message}</p>;
+  // if (users.length === 0) return <p>No users found.</p>;
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
