@@ -1,7 +1,7 @@
-import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/next";
 import { Jost } from "next/font/google";
 import "./globals.css";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const jost = Jost({
   subsets: ["latin"],
@@ -18,9 +18,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${jost.variable} font-sans antialiased bg-gray-50`}>
-        <ClerkProvider
-          publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-        >
+        <ClerkProvider>
           {children}
           <Analytics />
         </ClerkProvider>
