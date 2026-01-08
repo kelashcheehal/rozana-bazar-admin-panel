@@ -1,112 +1,85 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
-import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-export default function AllUsers() {
-  const { user, isLoaded } = useUser(); // Clerk user
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+import StatsCard from "@/components/admin/stats-card";
+import SalesChart from "@/components/admin/sales-chart";
+import RecentOrders from "@/components/admin/recent-orders";
+import TopProducts from "@/components/admin/top-products";
 
-  // 1️⃣ Sync current user to Supabase
-  useEffect(() => {
-    if (!isLoaded || !user) return;
+import { DollarSign, Users, ShoppingBag, Activity } from "lucide-react";
 
-    const email = user.emailAddresses?.[0]?.emailAddress;
-    if (!email) return;
-
-    const syncUser = async () => {
-      try {
-        // Check if user exists
-        const { data: existingUser } = await supabase
-          .from("users")
-          .select("id")
-          .eq("user_email", email)
-          .single();
-
-        if (!existingUser) {
-          // Insert new user
-          const { error: insertError } = await supabase.from("users").insert([
-            {
-              id: user.id,
-              user_firstname: user.firstName || "",
-              user_lastname: user.lastName || "",
-              user_email: email,
-              user_role: "user",
-              total_orders: 0,
-              total_spent: 0,
-            },
-          ]);
-
-          if (insertError) {
-            console.error("Error inserting user:", insertError.message);
-          }
-        }
-      } catch (err) {
-        console.error("Error syncing user:", err);
-      }
-    };
-
-    syncUser();
-  }, [user, isLoaded]);
-
-  // 2️⃣ Fetch all users from Supabase
-  useEffect(() => {
-    const fetchUsers = async () => {
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from("users")
-          .select("*")
-          .order("id", { ascending: true });
-
-        if (error) throw error;
-
-        setUsers(data || []);
-      } catch (err) {
-        console.error("Error fetching users:", err);
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUsers();
-  }, []);
-
-  // 3️⃣ Render
-  if (!isLoaded) return <p>Loading user...</p>;
-  if (loading) return <p>Loading users...</p>;
-  if (error) return <p>Error: {error.message}</p>;
-  if (users.length === 0) return <p>No users found.</p>;
-
+export default function DashboardPage() {
   return (
-    <div>
-      <h1 className="text-2xl font-semibold mb-4">All Users</h1>
-      <table className="w-full border-collapse border">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="border px-4 py-2">ID</th>
-            <th className="border px-4 py-2">Name</th>
-            <th className="border px-4 py-2">Email</th>
-            <th className="border px-4 py-2">Role</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((u) => (
-            <tr key={u.id} className="text-center hover:bg-gray-50">
-              <td className="border px-4 py-2">{u.id}</td>
-              <td className="border px-4 py-2">
-                {u.user_firstname} {u.user_lastname}
-              </td>
-              <td className="border px-4 py-2">{u.user_email}</td>
-              <td className="border px-4 py-2">{u.user_role}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4  duration-700 text-[#2C1810]">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-[#2C1810]">
+            Dashboard Overview
+          </h1>
+          <p className="text-gray-500">
+            Welcome back, Admin. Here's what's happening today.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-500">Last updated: Just now</span>
+          <button className="bg-[#2C1810] text-[#D4A574] px-4 py-2 rounded-lg hover:bg-[#3e2216] transition-colors text-sm font-medium">
+            Export Reports
+          </button>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatsCard
+          title="Total Revenue"
+          value="$54,239"
+          change="+12.5%"
+          trend="up"
+          icon={DollarSign}
+          description="vs. last month"
+        />
+        <StatsCard
+          title="Total Orders"
+          value="1,253"
+          change="+8.2%"
+          trend="up"
+          icon={ShoppingBag}
+          description="vs. last month"
+        />
+        <StatsCard
+          title="New Customers"
+          value="342"
+          change="-2.4%"
+          trend="down"
+          icon={Users}
+          description="vs. last month"
+        />
+        <StatsCard
+          title="Active Now"
+          value="573"
+          change="+24"
+          trend="up"
+          icon={Activity}
+          description="users online"
+        />
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <SalesChart />
+        </div>
+        <div>
+          <TopProducts />
+        </div>
+      </div>
+
+      {/* Recent Orders */}
+      <RecentOrders />
     </div>
   );
 }
