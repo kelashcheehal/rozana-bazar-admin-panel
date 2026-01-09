@@ -1,9 +1,9 @@
 "use client";
-// import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
-// import { UserButton, useUser } from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
+import { UserButton, useUser } from "@clerk/nextjs";
 import { Bell, Search } from "lucide-react";
 export default function Header() {
-  // const { user, isLoaded, isSignedIn } = useUser();
+  const { user, isLoaded, isSignedIn } = useUser();
   return (
     <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 py-4">
       <div className="flex items-center justify-between gap-4">
@@ -26,7 +26,7 @@ export default function Header() {
           <div className="h-8 w-[1px] bg-gray-200 mx-1 hidden sm:block" />
           <div className="flex items-center gap-3 pl-2">
             {/* User info & badge if signed in */}
-            {/* <SignedIn>
+            <SignedIn>
               <div className="flex items-center gap-3">
                 <div className="text-right hidden sm:block">
                   <p className="text-sm font-semibold text-[#2C1810]">
@@ -41,16 +41,16 @@ export default function Header() {
                   <UserButton />
                 </div>
               </div>
-            </SignedIn> */}
+            </SignedIn>
 
             {/* Sign-in button if not signed in */}
-            {/* <SignedOut>
+            <SignedOut>
               <SignInButton>
                 <button className="px-3 py-1 rounded-md bg-[#2C1810] text-[#D4A574] hover:bg-[#3a2114] transition-colors font-medium">
                   Login
                 </button>
               </SignInButton>
-            </SignedOut> */}
+            </SignedOut>
           </div>
         </div>
       </div>
