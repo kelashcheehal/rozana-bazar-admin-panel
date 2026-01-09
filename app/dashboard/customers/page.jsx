@@ -1,14 +1,11 @@
 "use client";
 
+import { Filter, Mail, MoreHorizontal, Search, User } from "lucide-react";
 import { useState } from "react";
-import { Search, Filter, Mail, MoreHorizontal, User } from "lucide-react";
-// import { useUser } from "@clerk/nextjs";
-// import { supabase } from "@/lib/supabaseClient";
-// import { useEffect } from "react";
+
 export default function CustomersPage() {
-  // const { user, isLoaded } = useUser(); // Clerk user
   const [users, setUsers] = useState([]);
-  // const [loading, setLoading] = useState(true);
+
   // const [error, setError] = useState(null);
 
   // useEffect(() => {
