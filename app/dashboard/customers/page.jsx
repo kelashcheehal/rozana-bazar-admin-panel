@@ -3,9 +3,10 @@
 import { supabase } from "@/lib/supabaseClient";
 import { useUser } from "@clerk/nextjs";
 import { Filter, Mail, MoreHorizontal, Search, User } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useState } from "react";
 export default function CustomersPage() {
-  const [loading, setLoading] = useState(false);
+const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { user, isLoaded, isSignedIn } = useUser();
   const [users, setUsers] = useState([]);
@@ -21,7 +22,8 @@ export default function CustomersPage() {
         const { data: existingUser } = await supabase
           .from("users")
           .select("id")
-          .eq("user_email", email);
+          .eq("user_email", email)
+          .single();
 
         if (!existingUser) {
           // Insert new user
@@ -42,7 +44,7 @@ export default function CustomersPage() {
           }
         }
       } catch (err) {
-        console.error("Error syncing user:", err);
+        console.log("Error syncing user:", err);
       }
     };
 
@@ -71,7 +73,6 @@ export default function CustomersPage() {
 
     fetchUsers();
   }, []);
-  console.log(users?.[0]?.user_role);
 
   if (!isLoaded) return <p>Loading user...</p>;
   if (loading) return <p>Loading users...</p>;
