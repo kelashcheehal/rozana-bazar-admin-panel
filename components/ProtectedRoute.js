@@ -23,7 +23,6 @@ export default function ProtectedRoute({
   const pathname = usePathname();
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     // Clerk is still loading
     if (!isLoaded) {

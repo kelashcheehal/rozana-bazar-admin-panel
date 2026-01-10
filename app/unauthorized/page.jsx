@@ -2,13 +2,14 @@
 
 import { useClerk, useUser } from "@clerk/nextjs";
 import { ArrowLeft, ShieldAlert } from "lucide-react";
-import Link from "next/link";
 
 export default function Page() {
   const { openSignIn, signOut } = useClerk();
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
 
   const handleSignIn = async () => {
+    if (!isLoaded) return;
+    if (!user) return;
     await signOut();
     openSignIn({ redirectUrl: window.location.href });
   };

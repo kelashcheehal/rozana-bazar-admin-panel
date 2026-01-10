@@ -6,81 +6,58 @@ import { Filter, Mail, MoreHorizontal, Search, User } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function CustomersPage() {
-  const { user, isLoaded, isSignedIn } = useUser();
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // Sync current user to Supabase
-  useEffect(() => {
-    if (!isLoaded || !isSignedIn || !user) return;
-
-    const email = user.emailAddresses?.[0]?.emailAddress;
-    if (!email) return;
-
-    const syncUser = async () => {
-      try {
-        const { data: existingUser } = await supabase
-          .from("users")
-          .select("id")
-          .eq("user_email", email)
-          .single();
-
-        if (!existingUser) {
-          await supabase.from("users").insert([
-            {
-              id: user.id,
-              user_firstname: user.firstName || "",
-              user_lastname: user.lastName || "",
-              user_email: email,
-              user_role: "user",
-              total_orders: 0,
-              total_spent: 0,
-            },
-          ]);
-        }
-      } catch (err) {
-        console.error("Error syncing user:", err);
-      }
-    };
-
-    syncUser();
-  }, [user, isLoaded, isSignedIn]);
-
-  // Fetch all users (admins only)
-  useEffect(() => {
-    if (!isLoaded || !isSignedIn || user?.publicMetadata?.role !== "admin") {
-      setLoading(false);
-      return;
-    }
-
-    const fetchUsers = async () => {
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from("users")
-          .select("*")
-          .order("id", { ascending: true });
-
-        if (error) throw error;
-
-        setUsers(data || []);
-      } catch (err) {
-        console.error("Error fetching users:", err);
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUsers();
-  }, [isLoaded, isSignedIn, user]);
-
-  if (!isLoaded || loading) return <p>Loading users...</p>;
-  if (!isSignedIn) return <p>Please sign in to view this page.</p>;
-  if (user?.publicMetadata?.role !== "admin") return <p>Access Denied</p>;
-  if (error) return <p>Error: {error.message}</p>;
-  if (users.length === 0) return <p>No users found.</p>;
+  const [users, setUsers] = useState([
+    {
+      id: 1,
+      user_firstname: "John",
+      user_lastname: "Doe",
+      user_email: "john.doe@example.com",
+      total_orders: 5,
+      total_spent: "$100.00",
+      status: "Active",
+      lastOrder: "2023-04-01",
+    },
+    {
+      id: 2,
+      user_firstname: "Jane",
+      user_lastname: "Smith",
+      user_email: "jane.smith@example.com",
+      total_orders: 3,
+      total_spent: "$75.00",
+      status: "Active",
+      lastOrder: "2023-04-05",
+    },
+    {
+      id: 3,
+      user_firstname: "Mike",
+      user_lastname: "Johnson",
+      user_email: "mike.johnson@example.com",
+      total_orders: 7,
+      total_spent: "$150.00",
+      status: "Inactive",
+      lastOrder: "2023-04-10",
+    },
+    {
+      id: 4,
+      user_firstname: "Emily",
+      user_lastname: "Williams",
+      user_email: "emily.williams@example.com",
+      total_orders: 2,
+      total_spent: "$50.00",
+      status: "Active",
+      lastOrder: "2023-04-15",
+    },
+    {
+      id: 5,
+      user_firstname: "Michael",
+      user_lastname: "Brown",
+      user_email: "michael.brown@example.com",
+      total_orders: 4,
+      total_spent: "$100.00",
+      status: "Active",
+      lastOrder: "2023-04-20",
+    },
+  ]);
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
