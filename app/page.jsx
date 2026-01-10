@@ -1,6 +1,7 @@
 "use client";
 
 import { useClerk, useUser } from "@clerk/nextjs";
+import { ArrowRight } from "lucide-react";
 import { ArrowLeft, ShieldAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -52,10 +53,10 @@ export default function Page() {
         </p>
         <div className="flex flex-col gap-3">
           <button
-            className="px-4 py-3 rounded-full bg-gray-100 text-[#2C1810] font-medium hover:bg-gray-200 transition"
+            className="flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-gray-100 text-[#2C1810] font-medium hover:bg-gray-200 transition"
             onClick={() => signOut().then(() => openSignIn())}
           >
-            Sign In with Another Account
+            Sign In with Another Account <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </div>

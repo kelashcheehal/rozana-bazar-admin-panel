@@ -3,22 +3,23 @@
 import { supabase } from "@/lib/supabaseClient";
 import { useUser } from "@clerk/nextjs";
 import { Filter, Mail, MoreHorizontal, Search, User } from "lucide-react";
-import { useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
 export default function CustomersPage() {
-const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const { user, isLoaded, isSignedIn } = useUser();
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Sync current user to Supabase
   useEffect(() => {
-    if (!isLoaded || !user) return;
+    if (!isLoaded || !isSignedIn || !user) return;
 
     const email = user.emailAddresses?.[0]?.emailAddress;
     if (!email) return;
 
     const syncUser = async () => {
       try {
-        // Check if user exists
         const { data: existingUser } = await supabase
           .from("users")
           .select("id")
@@ -26,8 +27,7 @@ const [loading, setLoading] = useState(false);
           .single();
 
         if (!existingUser) {
-          // Insert new user
-          const { error: insertError } = await supabase.from("users").insert([
+          await supabase.from("users").insert([
             {
               id: user.id,
               user_firstname: user.firstName || "",
@@ -38,20 +38,22 @@ const [loading, setLoading] = useState(false);
               total_spent: 0,
             },
           ]);
-
-          if (insertError) {
-            console.error("Error inserting user:", insertError.message);
-          }
         }
       } catch (err) {
-        console.log("Error syncing user:", err);
+        console.error("Error syncing user:", err);
       }
     };
 
     syncUser();
-  }, [user, isLoaded]);
+  }, [user, isLoaded, isSignedIn]);
 
+  // Fetch all users (admins only)
   useEffect(() => {
+    if (!isLoaded || !isSignedIn || user?.publicMetadata?.role !== "admin") {
+      setLoading(false);
+      return;
+    }
+
     const fetchUsers = async () => {
       setLoading(true);
       try {
@@ -72,15 +74,17 @@ const [loading, setLoading] = useState(false);
     };
 
     fetchUsers();
-  }, []);
+  }, [isLoaded, isSignedIn, user]);
 
-  if (!isLoaded) return <p>Loading user...</p>;
-  if (loading) return <p>Loading users...</p>;
+  if (!isLoaded || loading) return <p>Loading users...</p>;
+  if (!isSignedIn) return <p>Please sign in to view this page.</p>;
+  if (user?.publicMetadata?.role !== "admin") return <p>Access Denied</p>;
   if (error) return <p>Error: {error.message}</p>;
   if (users.length === 0) return <p>No users found.</p>;
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#2C1810]">Customers</h1>
@@ -92,7 +96,7 @@ const [loading, setLoading] = useState(false);
         </button>
       </div>
 
-      {/* Filters & Search */}
+      {/* Search & Filter */}
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row gap-4 justify-between items-center">
         <div className="relative w-full sm:w-96">
           <Search
@@ -148,23 +152,23 @@ const [loading, setLoading] = useState(false);
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-full bg-[#D4A574]/10 flex items-center justify-center text-[#D4A574] font-bold">
-                        {customer.user_firstname.charAt(0)}
+                        {customer.user_firstname?.charAt(0) || "?"}
                       </div>
                       <div>
                         <div className="font-medium text-[#2C1810]">
-                          {customer.user_firstname}
+                          {customer.user_firstname || "Unknown"}
                         </div>
                         <div className="text-xs text-gray-500">
-                          {customer.user_email}
+                          {customer.user_email || "-"}
                         </div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-gray-600">
-                    {customer.total_orders} orders
+                    {customer.total_orders || 0} orders
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap font-medium text-[#2C1810]">
-                    {customer.total_spent}
+                    {customer.total_spent || 0}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
@@ -176,11 +180,11 @@ const [loading, setLoading] = useState(false);
                           : "bg-red-100 text-red-700"
                       }`}
                     >
-                      {customer.status}
+                      {customer.status || "Unknown"}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {customer.lastOrder}
+                    {customer.lastOrder || "-"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <div className="flex items-center justify-end gap-2">
@@ -199,7 +203,7 @@ const [loading, setLoading] = useState(false);
         </div>
         <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
           <span className="text-sm text-gray-500">
-            Showing 1 to 5 of 5 entries
+            Showing 1 to {users.length} of {users.length} entries
           </span>
           <div className="flex gap-2">
             <button className="px-3 py-1 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50">
