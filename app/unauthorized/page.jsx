@@ -2,41 +2,16 @@
 
 import { useClerk, useUser } from "@clerk/nextjs";
 import { ArrowLeft, ShieldAlert } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function Page() {
-  const router = useRouter();
   const { openSignIn, signOut } = useClerk();
-  const { user, isLoaded } = useUser();
-  const [loading, setLoading] = useState(true);
+  const { user } = useUser();
 
-  useEffect(() => {
-    if (!isLoaded) return; // wait until Clerk loads
-
-    if (!user) {
-      // Not logged in → open login modal
-      signOut().then(() => openSignIn());
-    } else {
-      // Logged-in user → check role from Clerk public metadata
-      const role = user.publicMetadata?.role;
-
-      if (role === "admin") {
-        // Admin → redirect to dashboard
-        router.replace("/dashboard");
-      } else {
-        // Non-admin → stay on Access Denied
-        setLoading(false);
-      }
-    }
-  }, [user, isLoaded, router, openSignIn, signOut]);
-
-  if (loading)
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">Checking permissions...</p>
-      </div>
-    );
+  const handleSignIn = async () => {
+    await signOut();
+    openSignIn({ redirectUrl: window.location.href });
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -53,7 +28,7 @@ export default function Page() {
         <div className="flex flex-col gap-3">
           <button
             className="px-4 py-3 rounded-full bg-gray-100 text-[#2C1810] font-medium hover:bg-gray-200 transition"
-            onClick={() => signOut().then(() => openSignIn())}
+            onClick={handleSignIn}
           >
             Sign In with Another Account
           </button>
