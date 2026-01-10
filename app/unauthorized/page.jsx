@@ -8,8 +8,6 @@ export default function Page() {
   const { user, isLoaded } = useUser();
 
   const handleSignIn = async () => {
-    if (!isLoaded) return;
-    if (!user) return;
     await signOut();
     openSignIn({ redirectUrl: window.location.href });
   };
