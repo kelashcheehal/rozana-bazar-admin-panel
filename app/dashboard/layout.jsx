@@ -5,13 +5,17 @@ import Sidebar from "@/components/admin/sidebar";
 import Header from "@/components/admin/header";
 import "@/app/globals.css";
 import ProtectedRoute from "@/components/ProtectedRoute";
-
+import { useState, useEffect } from "react";
 const jost = Jost({
   subsets: ["latin"],
   variable: "--font-sans",
 });
 
 export default function AdminLayout({ children }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   return (
     <ProtectedRoute>
       <div className={`${jost.variable} font-sans antialiased min-h-screen`}>
