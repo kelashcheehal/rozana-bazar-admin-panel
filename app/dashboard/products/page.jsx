@@ -1,18 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Search, Filter, Edit, Trash2, Eye } from "lucide-react";
 import Link from "next/link";
-import { useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { useEffectEvent } from "react";
+
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
+
   useEffect(() => {
     const fetchProducts = async () => {
       const { data } = await supabase.from("products").select();
-      console.log(data);
       if (!data) {
         setError(new Error("Failed to fetch products"));
       } else {
@@ -21,8 +20,19 @@ export default function ProductsPage() {
     };
     fetchProducts();
   }, []);
+
+  // Safe JSON parser for image_urls
+  const parseJSON = (str) => {
+    try {
+      return JSON.parse(str);
+    } catch {
+      return [];
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#2C1810]">Products</h1>
@@ -85,65 +95,65 @@ export default function ProductsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {products.map((product) => (
-                <tr
-                  key={product.id}
-                  className="hover:bg-gray-50/50 transition-colors"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={
-                          product.image_urls
-                            ? JSON.parse(product.image_urls)[0]
-                            : "/placeholder.svg"
-                        }
-                        alt={product.name}
-                        className="h-10 w-10 rounded-lg object-cover bg-gray-100"
-                      />
-                      <span className="font-medium text-[#2C1810]">
-                        {product.name}
+              {products.map((product) => {
+                const images = product.image_urls
+                  ? parseJSON(product.image_urls)
+                  : [];
+                return (
+                  <tr
+                    key={product.id}
+                    className="hover:bg-gray-50/50 transition-colors"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={images[0] || "/placeholder.svg"}
+                          alt={product.name}
+                          className="h-10 w-10 rounded-lg object-cover bg-gray-100"
+                        />
+                        <span className="font-medium text-[#2C1810]">
+                          {product.name}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-600">
+                      {product.category}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap font-medium text-[#2C1810]">
+                      ${product.price?.toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-600">
+                      {product.stock?.qty || product.stock} units
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                          product.status === "In Stock"
+                            ? "bg-green-100 text-green-700"
+                            : product.status === "Low Stock"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {product.status}
                       </span>
-                    </div>
-                  </td>
-
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-600">
-                    {product.category}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap font-medium text-[#2C1810]">
-                    ${product.price.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-600">
-                    {product.stock} units
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                        product.status === "In Stock"
-                          ? "bg-green-100 text-green-700"
-                          : product.status === "Low Stock"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
-                    >
-                      {product.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button className="p-2 text-gray-400 hover:text-[#D4A574] transition-colors rounded-lg hover:bg-[#D4A574]/10">
-                        <Eye size={18} />
-                      </button>
-                      <button className="p-2 text-gray-400 hover:text-blue-500 transition-colors rounded-lg hover:bg-blue-50">
-                        <Edit size={18} />
-                      </button>
-                      <button className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50">
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button className="p-2 text-gray-400 hover:text-[#D4A574] transition-colors rounded-lg hover:bg-[#D4A574]/10">
+                          <Eye size={18} />
+                        </button>
+                        <button className="p-2 text-gray-400 hover:text-blue-500 transition-colors rounded-lg hover:bg-blue-50">
+                          <Edit size={18} />
+                        </button>
+                        <button className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50">
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

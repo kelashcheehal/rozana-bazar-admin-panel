@@ -203,9 +203,9 @@ export default function AddProduct() {
             discount_price: discountPrice,
             category: formData.category,
             stock: Number(formData.stock),
-            sizes: JSON.stringify(formData.sizes),
-            colors: JSON.stringify(colorsWithUrls),
-            image_urls: JSON.stringify(imageUrls),
+            sizes: (formData.sizes),
+            colors: (colorsWithUrls),
+            image_urls: (imageUrls),
           },
         ]);
 
