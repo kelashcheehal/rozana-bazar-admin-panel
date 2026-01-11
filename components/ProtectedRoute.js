@@ -2,7 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 /**
  * Protects routes for specific roles
@@ -21,63 +21,37 @@ export default function ProtectedRoute({
   const { isLoaded, isSignedIn, user } = useUser();
   const router = useRouter();
   const pathname = usePathname();
-  const [isAuthorized, setIsAuthorized] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // Memoize user role to avoid recomputation
+  const userRole = useMemo(() => user?.publicMetadata?.role, [user]);
+
+  // Memoize whether the current path should be protected
+  const shouldProtectPath = useMemo(
+    () => protectedPaths.some((path) => pathname.startsWith(path)),
+    [protectedPaths, pathname]
+  );
+
+  // Memoize authorization check to prevent unnecessary recalculations
+  const isAuthorized = useMemo(() => {
+    if (!isLoaded || !isSignedIn) return false;
+    if (!allowedRoles.includes(userRole)) return false;
+    if (shouldProtectPath && !allowedRoles.includes(userRole)) return false;
+    return true;
+  }, [isLoaded, isSignedIn, userRole, allowedRoles, shouldProtectPath]);
+
   useEffect(() => {
-    // Clerk is still loading
-    if (!isLoaded) {
-      return;
-    }
+    if (!isLoaded) return;
 
-    const checkAuthorization = () => {
-      // Not signed in
-      if (!isSignedIn) {
-        return false;
-      }
-
-      // Role check
-      const userRole = user?.publicMetadata?.role;
-      if (!allowedRoles.includes(userRole)) {
-        return false;
-      }
-
-      // Check if current path requires protection
-      const shouldProtectPath = protectedPaths.some((path) =>
-        pathname.startsWith(path)
-      );
-
-      // If accessing protected path, only allow authorized roles
-      if (shouldProtectPath && !allowedRoles.includes(userRole)) {
-        return false;
-      }
-
-      return true;
-    };
-
-    const authorized = checkAuthorization();
-    setIsAuthorized(authorized);
-
-    if (!authorized && isLoaded) {
-      // Prevent redirect loop
-      if (pathname !== redirectPath) {
-        router.replace(redirectPath);
-      }
+    if (!isAuthorized && pathname !== redirectPath) {
+      router.replace(redirectPath);
     } else {
       setLoading(false);
     }
-  }, [
-    isLoaded,
-    isSignedIn,
-    user,
-    router,
-    pathname,
-    allowedRoles,
-    protectedPaths,
-    redirectPath,
-  ]);
+  }, [isLoaded, isAuthorized, pathname, redirectPath, router]);
 
-  // Show loading state while checking
-  if (loading) {
+  // Show loading state while Clerk loads or checking authorization
+  if (loading || !isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -88,7 +62,7 @@ export default function ProtectedRoute({
     );
   }
 
-  // Only render children if authorized and not redirecting
+  // Only render children if authorized and not on redirect path
   if (!isAuthorized || pathname === redirectPath) {
     return null;
   }
