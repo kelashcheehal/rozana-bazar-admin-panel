@@ -16,7 +16,7 @@ import {
   Menu,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
+import { useClerk } from "@clerk/nextjs";
 const sidebarItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
   { icon: ShoppingBag, label: "Orders", href: "/dashboard/orders" },
@@ -26,11 +26,14 @@ const sidebarItems = [
   { icon: MessageSquare, label: "Messages", href: "/dashboard/messages" },
   { icon: Settings, label: "Settings", href: "/dashboard/settings" },
 ];
-
 export default function Sidebar() {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { signOut } = useClerk(); 
 
+  const handleLogout = async () => {
+    await signOut();
+  };
   // Close mobile sidebar on route change
   useEffect(() => {
     setIsMobileOpen(false);
@@ -66,7 +69,7 @@ export default function Sidebar() {
           <div className="p-8 border-b border-white/10 flex justify-between items-center">
             <div className="flex flex-col">
               <h1 className="text-2xl font-bold tracking-widest text-[#D4A574]">
-ROZANA
+                ROZANA
               </h1>
               <span className="text-sm tracking-[0.3em] text-white/80 uppercase">
                 Bazar
@@ -115,7 +118,7 @@ ROZANA
           <div className="p-4 border-t border-white/10">
             <button className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-white/70 hover:bg-red-500/10 hover:text-red-400 transition-all duration-300 group">
               <LogOut className="w-5 h-5" />
-              <span>Logout</span>
+              <span onClick={handleLogout}>Logout</span>
             </button>
           </div>
         </div>

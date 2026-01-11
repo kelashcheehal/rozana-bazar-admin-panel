@@ -2,57 +2,25 @@
 
 import { useState } from "react";
 import { Plus, Search, Filter, Edit, Trash2, Eye } from "lucide-react";
-
+import Link from "next/link";
+import { useEffect } from "react";
+import { supabase } from "@/lib/supabaseClient";
+import { useEffectEvent } from "react";
 export default function ProductsPage() {
-  // Mock Data
-  const [products] = useState([
-    {
-      id: 1,
-      name: "Luxury Wingback Chair",
-      category: "Living Room",
-      price: 599.0,
-      stock: 45,
-      status: "In Stock",
-      image: "/placeholder.svg?height=50&width=50",
-    },
-    {
-      id: 2,
-      name: "Oak Dining Table",
-      category: "Dining Room",
-      price: 899.0,
-      stock: 12,
-      status: "Low Stock",
-      image: "/placeholder.svg?height=50&width=50",
-    },
-    {
-      id: 3,
-      name: "Modern Office Desk",
-      category: "Study & Office",
-      price: 349.0,
-      stock: 0,
-      status: "Out of Stock",
-      image: "/placeholder.svg?height=50&width=50",
-    },
-    {
-      id: 4,
-      name: "Velvet Sofa Set",
-      category: "Living Room",
-      price: 1299.0,
-      stock: 8,
-      status: "Low Stock",
-      image: "/placeholder.svg?height=50&width=50",
-    },
-    {
-      id: 5,
-      name: "Outdoor Swing Chair",
-      category: "Outdoor",
-      price: 459.0,
-      stock: 23,
-      status: "In Stock",
-      image: "/placeholder.svg?height=50&width=50",
-    },
-  ]);
-
+  const [products, setProducts] = useState([]);
+  const [error, setError] = useState(null);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const { data } = await supabase.from("products").select();
+      console.log(data);
+      if (!data) {
+        setError(new Error("Failed to fetch products"));
+      } else {
+        setProducts(data);
+      }
+    };
+    fetchProducts();
+  }, []);
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -60,10 +28,13 @@ export default function ProductsPage() {
           <h1 className="text-2xl font-bold text-[#2C1810]">Products</h1>
           <p className="text-gray-500">Manage your product inventory</p>
         </div>
-        <button className="bg-[#2C1810] hover:bg-[#2C1810]/90 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+        <Link
+          href="/dashboard/products/add-product"
+          className="bg-[#2C1810] hover:bg-[#2C1810]/90 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+        >
           <Plus size={20} />
           <span>Add Product</span>
-        </button>
+        </Link>
       </div>
 
       {/* Filters & Search */}
@@ -122,7 +93,11 @@ export default function ProductsPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-3">
                       <img
-                        src={product.image || "/placeholder.svg"}
+                        src={
+                          product.image_urls
+                            ? JSON.parse(product.image_urls)[0]
+                            : "/placeholder.svg"
+                        }
                         alt={product.name}
                         className="h-10 w-10 rounded-lg object-cover bg-gray-100"
                       />
@@ -131,6 +106,7 @@ export default function ProductsPage() {
                       </span>
                     </div>
                   </td>
+
                   <td className="px-6 py-4 whitespace-nowrap text-gray-600">
                     {product.category}
                   </td>

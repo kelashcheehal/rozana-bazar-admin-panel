@@ -1,16 +1,15 @@
 "use client";
 
-import { Jost } from "next/font/google";
-import Sidebar from "@/components/admin/sidebar";
-import Header from "@/components/admin/header";
 import "@/app/globals.css";
+import Header from "@/components/admin/header";
+import Sidebar from "@/components/admin/sidebar";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { useState, useEffect } from "react";
+import { Jost } from "next/font/google";
+import { useEffect, useState } from "react";
 const jost = Jost({
   subsets: ["latin"],
   variable: "--font-sans",
 });
-
 export default function AdminLayout({ children }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {

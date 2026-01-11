@@ -29,6 +29,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
-  ],
+, "app/dashboard/products/add-product/page.jsx"  ],
   "exclude": ["node_modules"]
 }
