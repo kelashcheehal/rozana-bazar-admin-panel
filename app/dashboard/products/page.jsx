@@ -1,103 +1,94 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { Plus, Search, Filter, Edit, Trash2, Eye } from "lucide-react";
+import { useState, useCallback } from "react";
+import { Plus, Edit, Trash2, Eye } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { useParams, useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 
 const PAGE_SIZE = 10;
 
 export default function ProductsPage() {
   const router = useRouter();
   const { id } = useParams();
-  const [products, setProducts] = useState([]);
   const [page, setPage] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const handleEdit = useCallback(
-    (id) => {
-      router.push(`/dashboard/products/edit-product/${id}`);
-    },
+  const handleView = useCallback(
+    (id) => router.push(`/dashboard/products/product/${id}`),
     [router]
   );
 
-  const handleDelete = useCallback(async (productId) => {
-    if (!window.confirm("Are you sure you want to delete this product?"))
-      return;
+  const handleEdit = useCallback(
+    (id) => router.push(`/dashboard/products/edit-product/${id}`),
+    [router]
+  );
 
-    setDeleteLoading(true);
-    try {
-      const { error } = await supabase
-        .from("products")
-        .delete()
-        .eq("id", productId);
+  const handleDelete = useCallback(
+    async (productId) => {
+      if (!window.confirm("Are you sure you want to delete this product?"))
+        return;
 
-      if (error) throw error;
+      setDeleteLoading(true);
+      try {
+        const { error } = await supabase
+          .from("products")
+          .delete()
+          .eq("id", productId);
+        if (error) throw error;
 
-      // Remove from local state
-      setProducts((prev) => prev.filter((p) => p.id !== productId));
-    } catch (err) {
-      console.error("Delete Error:", err);
-      alert("Failed to delete product.");
-    } finally {
-      setDeleteLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const fetchProducts = async () => {
-      setLoading(true);
-      setError(null);
-
-      const from = page * PAGE_SIZE;
-      const to = from + PAGE_SIZE - 1;
-
-      const { data, error } = await supabase
-        .from("products")
-        .select()
-        .order("created_at", { ascending: true })
-        .range(from, to);
-
-      if (!cancelled) {
-        if (error) {
-          setError("Failed to fetch products");
-        } else {
-          // Parse data here to avoid re-parsing on render
-          const parsed = (data || []).map((p) => {
-            let images = [];
-            try {
-              images = p.image_urls ? JSON.parse(p.image_urls) : [];
-            } catch {}
-
-            const price = Number(p.price) || 0;
-            const discount = Number(p.discount) || 0;
-            const finalPrice = discount
-              ? price - (price * discount) / 100
-              : price;
-
-            return {
-              ...p,
-              images,
-              finalPrice,
-            };
-          });
-          setProducts(parsed);
-        }
-        setLoading(false);
+        // Refetch will handle updating the list
+        queryClient.invalidateQueries(["products", page]);
+      } catch (err) {
+        console.error(err);
+        alert("Failed to delete product.");
+      } finally {
+        setDeleteLoading(false);
       }
-    };
+    },
+    [page]
+  );
 
-    fetchProducts();
+  // Fetch products using TanStack Query
+  const fetchProducts = async ({ queryKey }) => {
+    const [_key, page] = queryKey;
+    const from = page * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
 
-    return () => {
-      cancelled = true;
-    };
-  }, [page]);
+    const { data, error } = await supabase
+      .from("products")
+      .select()
+      .order("created_at", { ascending: true })
+      .range(from, to);
+
+    if (error) throw error;
+
+    return (data || []).map((p) => {
+      let images = [];
+      try {
+        images = p.image_urls ? JSON.parse(p.image_urls) : [];
+      } catch {}
+
+      const price = Number(p.price) || 0;
+      const discount = Number(p.discount) || 0;
+      const finalPrice = discount ? price - (price * discount) / 100 : price;
+
+      return { ...p, images, finalPrice };
+    });
+  };
+
+  const {
+    data: products = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["products", page],
+    queryFn: fetchProducts,
+    keepPreviousData: true,
+  });
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -109,19 +100,18 @@ export default function ProductsPage() {
         </div>
         <Link
           href="/dashboard/products/add-product"
-          className="bg-[#2C1810] text-white px-4 py-2 rounded-lg flex items-center gap-2"
+          className="bg-[#2C1810] text-white px-4 py-2 rounded flex items-center gap-2"
         >
-          <Plus size={20} />
-          Add Product
+          <Plus size={20} /> Add Product
         </Link>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="overflow-hidden max-w-full">
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b">
-              <tr>
+          <table className="w-full border-separate border-spacing-y-2">
+            <thead>
+              <tr className="bg-[#ffffff]">
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500">
                   Product
                 </th>
@@ -143,8 +133,8 @@ export default function ProductsPage() {
               </tr>
             </thead>
 
-            <tbody className="divide-y">
-              {loading && (
+            <tbody>
+              {isLoading && (
                 <tr>
                   <td colSpan="6" className="py-6 text-center text-gray-500">
                     Loading products...
@@ -152,7 +142,15 @@ export default function ProductsPage() {
                 </tr>
               )}
 
-              {!loading && products.length === 0 && (
+              {isError && (
+                <tr>
+                  <td colSpan="6" className="py-6 text-center text-red-500">
+                    Failed to fetch products: {error.message}
+                  </td>
+                </tr>
+              )}
+
+              {!isLoading && products.length === 0 && (
                 <tr>
                   <td colSpan="6" className="py-6 text-center text-gray-500">
                     No products found
@@ -160,67 +158,109 @@ export default function ProductsPage() {
                 </tr>
               )}
 
-              {!loading &&
-                products.map((product) => (
-                  <tr key={product.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={product.images[0] || "/placeholder.svg"}
-                          className="h-10 w-10 rounded-lg object-cover"
-                          alt={product.name}
-                        />
-                        <span className="font-medium text-[#2C1810]">
+              {products.map((product) => (
+                <tr
+                  key={product.id}
+                  className="bg-[#fefefe] rounded cursor-pointer"
+                  onClick={() => handleView(product.id)}
+                >
+                  {/* Product Info */}
+                  <td className="px-2 py-2 text-right rounded">
+                    <div className="flex gap-3">
+                      <img
+                        src={product.images[0] || "/placeholder.svg"}
+                        className="h-10 w-10 rounded object-cover"
+                        alt={product.name}
+                        loading="lazy"
+                      />
+                      <div className="flex flex-col text-left max-w-[260px] pr-5">
+                        <span className="text-sm text-[#2C1810] w-full truncate">
                           {product.name}
                         </span>
+                        <span className="text-xs w-full text-gray-500 truncate">
+                          {product.description}
+                        </span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {product.category}
-                    </td>
-                    <td className="px-6 py-4 text-[#2C1810]">
-                      {product.discount ? (
-                        <>
-                          <span className="line-through text-sm text-red-400 mr-2">
-                            {Number(product.price).toFixed(2)}
-                          </span>
-                          <span>${product.finalPrice.toFixed(2)}</span>
-                        </>
-                      ) : (
-                        <span>${product.finalPrice.toFixed(2)}</span>
-                      )}
-                    </td>
+                    </div>
+                  </td>
 
-                    <td className="px-6 py-4 text-gray-600">
-                      {product.stock?.qty || product.stock} units
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">
-                        {product.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        <Eye
-                          size={18}
-                          className="text-gray-400 cursor-pointer hover:text-blue-500"
-                          onClick={() => handleEdit(product.id)}
-                        />
-                        <Edit
-                          size={18}
-                          className="text-gray-400 cursor-pointer hover:text-blue-500"
-                          onClick={() => handleEdit(product.id)}
-                        />
-                        <Trash2
-                          size={18}
-                          className="text-gray-400 cursor-pointer hover:text-red-500"
-                          onClick={() => handleDelete(product.id)}
-                          disabled={deleteLoading}
-                        />
+                  <td className="px-6 py-4 text-gray-600 md:table-cell">
+                    <span className="px-2 py-1 bg-[#f5f5f5] rounded text-xs">
+                      {product.category || "Uncategorized"}
+                    </span>
+                  </td>
+
+                  <td className="whitespace-nowrap">
+                    {product.discount ? (
+                      <div className="flex flex-col leading-tight">
+                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                          <span className="line-through">
+                            PKR {Number(product.price).toFixed(2)}
+                          </span>
+                          <span className="text-red-400">
+                            (-{Number(product.discount)}%)
+                          </span>
+                        </div>
+                        <span className="text-sm font-semibold text-[#2C1810]">
+                          PKR {product.finalPrice.toFixed(2)}
+                        </span>
                       </div>
-                    </td>
-                  </tr>
-                ))}
+                    ) : (
+                      <span className="text-sm font-semibold text-[#2C1810]">
+                        PKR {product.finalPrice.toFixed(2)}
+                      </span>
+                    )}
+                  </td>
+
+                  <td className="px-6 py-4 text-gray-600 md:table-cell">
+                    <span className="px-2 py-1 bg-[#f5f5f5] rounded text-xs">
+                      {product.stock || 0} Units
+                    </span>
+                  </td>
+
+                  <td className="px-6 py-4">
+                    <span className="px-2 py-1 text-xs rounded bg-green-100 text-green-700">
+                      {product.status}
+                    </span>
+                  </td>
+
+                  <td className="px-6 py-4 text-right rounded">
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleView(product.id);
+                        }}
+                        className="p-2 text-gray-400 hover:text-[#D4A574] rounded cursor-pointer hover:bg-[#D4A574]/10 transition-colors"
+                        title="View"
+                      >
+                        <Eye size={18} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(product.id);
+                        }}
+                        className="p-2 text-gray-400 hover:text-blue-500 rounded cursor-pointer hover:bg-blue-50 transition-colors"
+                        title="Edit"
+                      >
+                        <Edit size={18} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(product.id);
+                        }}
+                        className="p-2 text-gray-400 hover:text-red-500 rounded cursor-pointer hover:bg-red-50 transition-colors"
+                        title="Delete"
+                        disabled={deleteLoading}
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -233,14 +273,14 @@ export default function ProductsPage() {
           </span>
           <div className="flex gap-2">
             <button
-              disabled={page === 0 || loading}
+              disabled={page === 0 || isLoading}
               onClick={() => setPage((p) => p - 1)}
               className="px-3 py-1 border rounded disabled:opacity-50"
             >
               Previous
             </button>
             <button
-              disabled={products.length < PAGE_SIZE || loading}
+              disabled={products.length < PAGE_SIZE || isLoading}
               onClick={() => setPage((p) => p + 1)}
               className="px-3 py-1 border rounded disabled:opacity-50"
             >

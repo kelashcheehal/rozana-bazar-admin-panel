@@ -183,7 +183,6 @@ export default function AddProduct() {
         alert("Please upload at least 3 product images.");
         return;
       }
-    
 
       setLoading(true);
       try {
@@ -200,9 +199,11 @@ export default function AddProduct() {
         });
         const colorsWithUrls = await Promise.all(colorUploadPromises);
 
-        const price = Number(formData.price);
+        const truncate2 = (value) => Math.floor(Number(value) * 100) / 100;
+
+        const price = truncate2(formData.price);
         const discount = Number(formData.discount) || 0;
-        const discountPrice = price - (price * discount) / 100;
+        const discountPrice = truncate2(price - (price * discount) / 100);
 
         const { error } = await supabase.from("products").insert([
           {

@@ -228,14 +228,11 @@ export default function EditProduct() {
     async (e) => {
       e.preventDefault();
 
-      if (uploadedImagesCount < 4) {
-        alert("Please upload at least 4 product images.");
+      if (uploadedImagesCount < 3) {
+        alert("Please upload at least 3 product images.");
         return;
       }
-      if (!formData.colors.length) {
-        alert("Please add at least one color.");
-        return;
-      }
+    
 
       setLoading(true);
       try {
@@ -281,9 +278,11 @@ export default function EditProduct() {
           }
         });
 
-        const price = Number(formData.price);
+        const truncate2 = (value) => Math.floor(Number(value) * 100) / 100;
+
+        const price = truncate2(formData.price);
         const discount = Number(formData.discount) || 0;
-        const discountPrice = price - (price * discount) / 100;
+        const discountPrice = truncate2(price - (price * discount) / 100);
 
         const { error } = await supabase
           .from("products")
@@ -456,7 +455,7 @@ export default function EditProduct() {
           {/* Product Images */}
           <div>
             <label className="font-medium">
-              Product Images (4-6) - {uploadedImagesCount}/6 uploaded
+              Product Images (3-6) - {uploadedImagesCount}/6 uploaded
             </label>
             <div className="flex flex-wrap gap-4 mt-2">
               {Array.from({ length: 6 }).map((_, idx) => {
