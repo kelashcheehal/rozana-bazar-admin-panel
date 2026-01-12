@@ -14,7 +14,7 @@ import { useEffect, useMemo, useState } from "react";
  */
 export default function ProtectedRoute({
   children,
-  allowedRoles = ["admin"],
+  allowedRoles = [""],
   protectedPaths = ["/dashboard"],
   redirectPath = "/unauthorized",
 }) {
