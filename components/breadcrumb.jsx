@@ -1,26 +1,58 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { ChevronRight } from "lucide-react"
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 
-export default function Breadcrumb({ items = [] }) {
+import {
+  Breadcrumb as ShadBreadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+
+export default function AdminBreadcrumb({ items = [] }) {
   return (
-    <nav className="flex items-center gap-1 text-sm text-gray-600 mb-6">
-      <Link href="/admin/dashboard" className="hover:text-[#D4A574] transition-colors">
-        Dashboard
-      </Link>
-      {items.map((item, index) => (
-        <div key={index} className="flex items-center gap-1">
-          <ChevronRight size={16} className="text-gray-400" />
-          {item.href ? (
-            <Link href={item.href} className="hover:text-[#D4A574] transition-colors">
-              {item.label}
+    <ShadBreadcrumb className="mb-6">
+      <BreadcrumbList>
+        {/* Home / Dashboard */}
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link
+              href="/admin/dashboard"
+              className="hover:text-[#D4A574] transition-colors"
+            >
+              Dashboard
             </Link>
-          ) : (
-            <span className="text-[#2C1810] font-medium">{item.label}</span>
-          )}
-        </div>
-      ))}
-    </nav>
-  )
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+
+        {items.map((item, index) => (
+          <div key={index} className="flex items-center">
+            <BreadcrumbSeparator>
+              <ChevronRight className="h-4 w-4 text-gray-400" />
+            </BreadcrumbSeparator>
+
+            <BreadcrumbItem>
+              {item.href ? (
+                <BreadcrumbLink asChild>
+                  <Link
+                    href={item.href}
+                    className="hover:text-[#D4A574] transition-colors"
+                  >
+                    {item.label}
+                  </Link>
+                </BreadcrumbLink>
+              ) : (
+                <BreadcrumbPage className="text-[#2C1810] font-medium">
+                  {item.label}
+                </BreadcrumbPage>
+              )}
+            </BreadcrumbItem>
+          </div>
+        ))}
+      </BreadcrumbList>
+    </ShadBreadcrumb>
+  );
 }

@@ -36,7 +36,7 @@ export default function AdminLayout({ children }) {
               {/* Main content */}
               <div className="flex-1 flex flex-col overflow-hidden">
                 <Header />
-                <main className="flex-1 overflow-y-auto no-scrollbar p-6 bg-[#F5F5F5]">
+                <main className="flex-1 overflow-y-auto no-scrollbar p-6 bg-[#ffffff]">
                   {children}
                 </main>
               </div>

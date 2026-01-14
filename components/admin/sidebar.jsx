@@ -67,9 +67,9 @@ export default function Sidebar() {
           "lg:translate-x-0"
         )}
       >
-        <div className="h-full flex flex-col">
+        <div className="h-full flex flex-col border-r">
           {/* Logo */}
-          <div className="p-6 border-b flex justify-between items-center border-gray-200">
+          <div className="pl-4 pt-2 pb-[8px] border-b  flex justify-between items-center border-gray-200">
             <div className="flex flex-col">
               <h1 className="text-2xl font-bold tracking-widest text-[#D4A574]">
                 ROZANA
