@@ -19,7 +19,7 @@ export default function ProductsPage() {
   const queryClient = useQueryClient();
 
   const handleView = useCallback(
-    (id) => router.push(`/dashboard/products/product/${id}`),
+    (slug) => router.push(`/dashboard/products/${slug}`),
     [router]
   );
 
@@ -227,7 +227,7 @@ export default function ProductsPage() {
                 <tr
                   key={product.id}
                   className="bg-[#fefefe] rounded cursor-pointer hover:bg-gray-50 transition-colors"
-                  onClick={() => handleView(product.id)}
+                  onClick={() => handleView(product.slug)}
                 >
                   {/* Product Info */}
                   <td className="px-3 py-2 text-right rounded">
@@ -307,7 +307,7 @@ export default function ProductsPage() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleView(product.id);
+                          handleView(product.slug);
                         }}
                         className="p-2 text-gray-400 hover:text-[#D4A574] rounded cursor-pointer hover:bg-[#D4A574]/10 transition-colors"
                         title="View"

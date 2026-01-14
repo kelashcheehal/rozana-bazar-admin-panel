@@ -9,8 +9,11 @@ import RecentOrders from "@/components/admin/recent-orders";
 import TopProducts from "@/components/admin/top-products";
 
 import { DollarSign, Users, ShoppingBag, Activity } from "lucide-react";
+import { useProducts } from "@/lib/useProducts";
 
 export default function DashboardPage() {
+  const {data: products} = useProducts()
+  console.log(products)
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4  duration-700 text-[#2C1810]">
       {/* Header */}
