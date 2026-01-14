@@ -46,10 +46,10 @@ export default function EditProduct() {
     sku: "",
     materials: [],
     description: "",
-    price: "",
-    discount: "",
+    price: 0, // Changed to number
+    discount: 0, // Changed to number
     category: "",
-    stock: "",
+    stock: 0, // Changed to number
     sizes: [],
     colors: [],
     images: Array(6).fill(null), // Will be array of { url?, file?, preview? }
@@ -101,10 +101,10 @@ export default function EditProduct() {
         sku: data.sku || "",
         materials: parsedMaterials,
         description: data.description || "",
-        price: data.price || 0,
-        discount: data.discount || 0,
+        price: parseFloat(data.price) || 0,
+        discount: parseFloat(data.discount) || 0,
         category: data.category || "",
-        stock: data.stock,
+        stock: Math.floor(Number(data.stock)) || 0,
         sizes: parsedSizes,
         colors: parsedColors.map((c) => ({ ...c, preview: c.image })), // Add preview for existing
         images,
@@ -139,7 +139,16 @@ export default function EditProduct() {
   // Handlers with useCallback for optimization
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "stock") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: Math.floor(Number(value)) || 0,
+      }));
+    } else if (name === "price" || name === "discount") {
+      setFormData((prev) => ({ ...prev, [name]: parseFloat(value) || 0 }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   }, []);
 
   const handleSelectChange = useCallback((key, value) => {
@@ -232,7 +241,6 @@ export default function EditProduct() {
         alert("Please upload at least 3 product images.");
         return;
       }
-    
 
       setLoading(true);
       try {
@@ -278,11 +286,11 @@ export default function EditProduct() {
           }
         });
 
-        const truncate2 = (value) => Math.floor(Number(value) * 100) / 100;
-
-        const price = truncate2(formData.price);
-        const discount = Number(formData.discount) || 0;
-        const discountPrice = truncate2(price - (price * discount) / 100);
+        const price = formData.price;
+        const discount = formData.discount;
+        const discountPrice = parseFloat(
+          (price - (price * discount) / 100).toFixed(2)
+        );
 
         const { error } = await supabase
           .from("products")
@@ -356,6 +364,8 @@ export default function EditProduct() {
             <Input
               name="price"
               type="number"
+              step="0.01"
+              min="0"
               placeholder="Price"
               value={formData.price}
               onChange={handleInputChange}
@@ -364,15 +374,18 @@ export default function EditProduct() {
             <Input
               name="discount"
               type="number"
+              step="0.01"
+              min="0"
+              max="100"
               placeholder="Discount %"
-              min={0}
-              max={100}
               value={formData.discount}
               onChange={handleInputChange}
             />
             <Input
               name="stock"
               type="number"
+              step="1"
+              min="0"
               placeholder="Stock"
               value={formData.stock}
               onChange={handleInputChange}

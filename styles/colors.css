@@ -1,0 +1,26 @@
+/* styles/colors.css */
+.compwbg {
+  background-color: #ffffff;
+}
+
+.primary-bg {
+  background-color: #f5f5f5;
+}
+.primary-text {
+  color: #f5f5f5;
+}
+
+.dark-text {
+  color: #2c1810;
+}
+.dark-black {
+  color: #000;
+}
+
+.muted {
+  color: #2c1810;
+}
+
+.bg-light {
+  background-color: #f9f7f4;
+}

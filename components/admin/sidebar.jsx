@@ -17,8 +17,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useClerk } from "@clerk/nextjs";
+
 const sidebarItems = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
+  { icon: LayoutDashboard, label: "Homepage", href: "/dashboard" },
   { icon: ShoppingBag, label: "Orders", href: "/dashboard/orders" },
   { icon: Package, label: "Products", href: "/dashboard/products" },
   { icon: Users, label: "Customers", href: "/dashboard/customers" },
@@ -26,15 +27,16 @@ const sidebarItems = [
   { icon: MessageSquare, label: "Messages", href: "/dashboard/messages" },
   { icon: Settings, label: "Settings", href: "/dashboard/settings" },
 ];
+
 export default function Sidebar() {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { signOut } = useClerk(); 
+  const { signOut } = useClerk();
 
   const handleLogout = async () => {
     await signOut();
   };
-  // Close mobile sidebar on route change
+
   useEffect(() => {
     setIsMobileOpen(false);
   }, [pathname]);
@@ -44,7 +46,7 @@ export default function Sidebar() {
       {/* Mobile Trigger */}
       <button
         onClick={() => setIsMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-[#2C1810] text-[#D4A574] rounded-md shadow-lg"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-[#ffffff] text-[#D4A574] rounded-md shadow-md"
       >
         <Menu className="w-6 h-6" />
       </button>
@@ -57,35 +59,36 @@ export default function Sidebar() {
         />
       )}
 
-      {/* Sidebar Container */}
+      {/* Sidebar */}
       <aside
         className={cn(
-          "fixed lg:static inset-y-0 left-0 z-50 w-72 bg-[#2C1810] text-white transition-transform duration-300 ease-in-out lg:translate-x-0",
-          isMobileOpen ? "translate-x-0" : "-translate-x-full"
+          "fixed lg:static inset-y-0 left-0 z-50 w-72 bg-white text-gray-700 transform transition-transform duration-300 ease-in-out",
+          isMobileOpen ? "translate-x-0" : "-translate-x-full",
+          "lg:translate-x-0"
         )}
       >
         <div className="h-full flex flex-col">
-          {/* Logo Area */}
-          <div className="p-8 border-b border-white/10 flex justify-between items-center">
+          {/* Logo */}
+          <div className="p-6 border-b flex justify-between items-center border-gray-200">
             <div className="flex flex-col">
               <h1 className="text-2xl font-bold tracking-widest text-[#D4A574]">
                 ROZANA
               </h1>
-              <span className="text-sm tracking-[0.3em] text-white/80 uppercase">
+              <span className="text-sm tracking-[0.3em] text-gray-500 uppercase">
                 Bazar
               </span>
             </div>
             <button
               onClick={() => setIsMobileOpen(false)}
-              className="lg:hidden text-white/60 hover:text-white"
+              className="lg:hidden text-gray-400 hover:text-gray-600"
             >
               <X className="w-6 h-6" />
             </button>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2 overflow-y-auto no-scrollbar">
-            <div className="px-4 py-2 text-xs uppercase tracking-wider text-white/40 font-medium">
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+            <div className="px-4 py-2 text-xs uppercase tracking-wider text-gray-500 font-medium">
               Menu
             </div>
             {sidebarItems.map((item) => {
@@ -96,16 +99,16 @@ export default function Sidebar() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group",
+                    "flex items-center gap-3 px-4 py-2 rounded transition-all duration-200",
                     isActive
-                      ? "bg-[#D4A574] text-[#2C1810] font-medium shadow-lg shadow-[#D4A574]/20"
-                      : "text-white/70 hover:bg-white/10 hover:text-white"
+                      ? "bg-[#FDF8F3] text-[#D4A574] font-medium"
+                      : "hover:bg-[#f5f5f5] text-gray-700"
                   )}
                 >
                   <Icon
                     className={cn(
-                      "w-5 h-5 transition-colors",
-                      isActive ? "text-[#2C1810]" : "text-white/60"
+                      "w-5 h-5",
+                      isActive ? "text-[#D4A574]" : "text-gray-400"
                     )}
                   />
                   <span>{item.label}</span>
@@ -114,11 +117,14 @@ export default function Sidebar() {
             })}
           </nav>
 
-          {/* User & Logout */}
-          <div className="p-4 border-t border-white/10">
-            <button className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-white/70 hover:bg-red-500/10 hover:text-red-400 transition-all duration-300 group">
+          {/* Logout */}
+          <div className="p-4 border-t border-gray-200">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 w-full px-4 py-2 rounded text-gray-700 hover:bg-red-100 hover:text-red-600 transition-colors duration-200"
+            >
               <LogOut className="w-5 h-5" />
-              <span onClick={handleLogout}>Logout</span>
+              <span>Logout</span>
             </button>
           </div>
         </div>

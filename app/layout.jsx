@@ -2,6 +2,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { Jost } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
+import "../styles/colors.css"
 const jost = Jost({
   subsets: ["latin"],
   variable: "--font-sans",

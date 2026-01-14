@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-
 /* Fixed root variables and scrolling behavior */
 :root {
   --primary-dark: #2c1810;
