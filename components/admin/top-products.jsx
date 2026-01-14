@@ -1,41 +1,24 @@
+"use client";
+
+import { useProducts } from "@/lib/useProducts";
 import { useRouter } from "next/navigation";
-
-const products = [
-  {
-    name: "Modern Swing Chair",
-    category: "Outdoor",
-    price: "$450",
-    sold: 124,
-    image: "/comfortable-armchair.png",
-  },
-  {
-    name: "Teak Wood Sofa",
-    category: "Living Room",
-    price: "$1,299",
-    sold: 98,
-    image: "/comfortable-living-room-sofa.png",
-  },
-  {
-    name: "Office Study Desk",
-    category: "Study",
-    price: "$320",
-    sold: 86,
-    image: "/simple-wooden-desk.png",
-  },
-  {
-    name: "Dining Table Set",
-    category: "Kitchen",
-    price: "$850",
-    sold: 65,
-    image: "/wooden-dining-table.png",
-  },
-];
-
+import Image from "next/image";
 export default function TopProducts() {
   const route = useRouter();
+  const { data: products, isLoading, error } = useProducts(); // hook se data
+
   const navigateAllProducts = () => {
     route.push("/dashboard/products");
   };
+
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Error loading products</p>;
+
+  // top 4 selling products
+  const topProducts = products
+    .sort((a, b) => b.sold - a.sold) // sold descending
+    .slice(0, 4);
+
   return (
     <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-full">
       <h3 className="text-lg font-bold text-[#2C1810] mb-1">Top Products</h3>
@@ -44,16 +27,19 @@ export default function TopProducts() {
       </p>
 
       <div className="space-y-4">
-        {products.map((product, index) => (
+        {topProducts.map((product) => (
           <div
-            key={index}
+            key={product.id} // id ko key ke liye use kare
             className="flex items-center gap-4 p-2 hover:bg-gray-50 rounded-xl transition-colors group"
           >
             <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden">
               <img
-                src={product.image || "/placeholder.svg"}
+                src={product.images[0] || "/placeholder.svg"}
+                className="h-10 w-10 rounded object-cover"
                 alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                width={48}
+                height={48}
+                loading="lazy"
               />
             </div>
             <div className="flex-1">
