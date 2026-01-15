@@ -207,18 +207,16 @@ export default function ProductDetailPage() {
           {product.image_urls.map((image, index) => (
             <div
               key={index}
-              className="relative min-w-full h-[90vw] snap-center bg-gray-50"
+              className="relative min-w-full h-[90vw] overflow-hidden snap-center bg-gray-50"
             >
-              <Image
+              <img
                 src={
                   index === 0 && selectedColor.image
                     ? selectedColor.image
                     : image
                 }
                 alt={`${product.name} ${index + 1}`}
-                fill
                 className="object-cover"
-                priority={index === 0}
               />
             </div>
           ))}

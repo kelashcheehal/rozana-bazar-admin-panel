@@ -33,11 +33,9 @@ export default function ColorSelector({
               >
                 <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-lg overflow-hidden bg-gray-50">
                   {color.image && (
-                    <Image
+                    <img
                       src={color.image}
                       alt={color.colorName}
-                      width={48}
-                      height={48}
                       className="object-cover w-full h-full"
                     />
                   )}

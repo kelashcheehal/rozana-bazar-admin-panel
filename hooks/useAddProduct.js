@@ -142,21 +142,30 @@ export function useAddProduct() {
   }, []);
 
   const uploadFiles = useCallback(async (files, folder = "products") => {
-    const urls = await Promise.all(
-      files.map(async (file) => {
-        if (!file) return null;
-        const fileName = `${folder}/${Date.now()}_${file.name}`;
-        const { error } = await supabase.storage
-          .from("product-images")
-          .upload(fileName, file, { cacheControl: "3600", upsert: false });
-        if (error) throw error;
-        const { data } = supabase.storage
-          .from("product-images")
-          .getPublicUrl(fileName);
-        return data.publicUrl;
-      })
-    );
-    return urls.filter(Boolean);
+    if (!files.length) return [];
+
+    const uploadPromises = files.map(async (file) => {
+      const fileName = `${folder}/${Date.now()}-${file.name.replace(
+        /\s+/g,
+        "_"
+      )}`;
+      const { data, error } = await supabase.storage
+        .from("product-images")
+        .upload(fileName, file, {
+          cacheControl: "3600",
+          upsert: true,
+        });
+
+      if (error) throw error;
+
+      const { publicUrl } = supabase.storage
+        .from("product-images")
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    });
+
+    return Promise.all(uploadPromises); // returns array of URLs
   }, []);
 
   const handleSubmit = useCallback(
@@ -171,6 +180,13 @@ export function useAddProduct() {
       setLoading(true);
 
       try {
+        const generateSlug = (name) =>
+          name
+            .toLowerCase()
+            .trim()
+            .replace(/[^\w\s-]/g, "")
+            .replace(/\s+/g, "-");
+
         const slug = generateSlug(formData.name);
 
         // Upload product images
@@ -206,8 +222,7 @@ export function useAddProduct() {
         ]);
 
         if (error) throw error;
-
-        router.push(`/dashboard/products/product/${slug}`);
+        router.push(`/dashboard/products/${slug}`);
       } catch (err) {
         console.error(err);
         alert("Failed to add product");
@@ -217,7 +232,6 @@ export function useAddProduct() {
     },
     [formData, uploadedImagesCount, uploadFiles, router]
   );
-  
 
   return {
     formData,

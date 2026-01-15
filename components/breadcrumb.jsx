@@ -45,7 +45,7 @@ export default function AdminBreadcrumb({ items = [] }) {
                   </Link>
                 </BreadcrumbLink>
               ) : (
-                <BreadcrumbPage className="text-[#2C1810] font-medium">
+                <BreadcrumbPage className="text-[#2C1810] font-medium truncate">
                   {item.label}
                 </BreadcrumbPage>
               )}

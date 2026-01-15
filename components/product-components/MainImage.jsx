@@ -13,7 +13,6 @@ export default function MainImage({
 }) {
   const discountPercentage =
     product.discount > 0 ? Math.round(product.discount) : 0;
-  console.log(document.cookie);
 
   return (
     <div className="hidden lg:block">
@@ -21,7 +20,7 @@ export default function MainImage({
         <img
           src={selectedColor?.image || product.image_urls[selectedImageIndex]}
           alt={product.name}
-          fill="both"
+          className="object-cover"
         />
 
         <div className="absolute top-4 left-4 flex flex-col gap-2">
@@ -39,7 +38,7 @@ export default function MainImage({
 
         <button
           onClick={toggleFavorite}
-          className="absolute top-4 right-4 p-3 bg-white rounded-full shadow-md cursor-pointer"
+          className="absolute top-4 right-4 p-3 bg-white rounded-full shadow-md"
         >
           <Heart
             className={`h-5 w-5 ${
@@ -54,15 +53,10 @@ export default function MainImage({
         {product.image_urls.map((image, index) => (
           <div
             key={index}
-            className="relative w-full h-[80vh] bg-gray-50"
+            className="relative w-full bg-gray-50 cursor-pointer"
             onClick={() => setSelectedImageIndex(index)}
           >
-            <Image
-              src={image}
-              alt={`${product.name} ${index + 1}`}
-              fill
-              className="object-cover"
-            />
+            <img src={image} alt={`${product.name} ${index + 1}`} />
           </div>
         ))}
       </div>
