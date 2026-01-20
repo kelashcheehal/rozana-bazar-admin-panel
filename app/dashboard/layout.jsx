@@ -1,14 +1,14 @@
 "use client";
 
 import "@/app/globals.css";
+import { CommandMenu } from "@/components/admin/command-menu";
 import Header from "@/components/admin/header";
-import AdminBreadcrumb from "@/components/breadcrumb";
 import Sidebar from "@/components/admin/sidebar";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Jost } from "next/font/google";
 import { useEffect, useState } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
+import {AIAssistant} from "@/components/admin/ai-assistant";
 const jost = Jost({
   subsets: ["latin"],
   variable: "--font-sans",
@@ -23,32 +23,32 @@ export default function AdminLayout({ children }) {
   return (
     <ProtectedRoute>
       <QueryClientProvider client={queryClient}>
-        <QueryClientProvider client={queryClient}>
-          <div
-            className={`${jost.variable} font-sans antialiased min-h-screen`}
-          >
-            {/* Main flex container for desktop */}
-            <div className="flex h-screen bg-[#F5F5F5">
-              {/* Desktop sidebar */}
-              <div className="hidden lg:flex lg:w-72">
-                <Sidebar isDesktop />
-              </div>
-
-              {/* Main content */}
-              <div className="flex-1 flex flex-col overflow-hidden">
-                <Header />
-                <main className="flex-1 overflow-y-auto no-scrollbar p-6 bg-[#ffffff]">
-                  {children}
-                </main>
-              </div>
+        <CommandMenu />
+        <AIAssistant />
+        <div
+          className={`${jost.variable} font-sans antialiased min-h-screen`}
+        >
+          {/* Main flex container for desktop */}
+          <div className="flex h-screen bg-[#F5F5F5">
+            {/* Desktop sidebar */}
+            <div className="hidden lg:flex lg:w-72">
+              <Sidebar isDesktop />
             </div>
 
-            {/* Mobile sidebar (outside flex container so it can overlay content) */}
-            <div className="lg:hidden">
-              <Sidebar />
+            {/* Main content */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <Header />
+              <main className="flex-1 overflow-y-auto no-scrollbar p-6 bg-[#ffffff]">
+                {children}
+              </main>
             </div>
           </div>
-        </QueryClientProvider>
+
+          {/* Mobile sidebar (outside flex container so it can overlay content) */}
+          <div className="lg:hidden">
+            <Sidebar />
+          </div>
+        </div>
       </QueryClientProvider>
     </ProtectedRoute>
   );

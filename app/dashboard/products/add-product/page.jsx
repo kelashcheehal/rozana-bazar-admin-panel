@@ -68,7 +68,7 @@ export default function AddProductPage() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
           <Card>
             <CardHeader>
               <CardTitle className="flex justify-between items-center">

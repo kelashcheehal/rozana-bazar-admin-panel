@@ -5,13 +5,13 @@ import Pagination from "@/components/admin/Pagination";
 import ProductFilters from "@/components/product-components/ProductFilters";
 import { supabase } from "@/lib/supabaseClient";
 import { cn } from "@/lib/utils";
+import { Toast } from "@radix-ui/react-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, Edit, Eye, Package, Plus, Trash2, XCircle } from "lucide-react";
 import Image from 'next/image';
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
-
 const PAGE_SIZE = 25;
 
 

@@ -134,7 +134,7 @@ export default function OrdersPage() {
       </div>
 
       {/* Search + Filters */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border flex flex-col sm:flex-row gap-4 justify-between items-center">
+      <div className="bg-white p-4 rounded-lg shadow-sm border flex flex-col sm:flex-row gap-4 justify-between items-center">
         {/* Search */}
         <div className="relative w-full sm:w-96">
           <Search
@@ -213,7 +213,7 @@ export default function OrdersPage() {
       </div>
 
       {/* Orders Table */}
-      <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b">

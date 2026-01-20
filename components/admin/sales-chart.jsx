@@ -1,19 +1,19 @@
 "use client";
 import {
-    Area,
-    AreaChart,
-    CartesianGrid,
-    ResponsiveContainer,
-    Tooltip,
-    XAxis,
-    YAxis,
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from "recharts";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "../ui/select";
 const defaultData = [
   { name: "Jan", value: 2400 },
@@ -28,7 +28,7 @@ const defaultData = [
 export default function SalesChart({ data }) {
   const chartData = data && data.length > 0 ? data : defaultData;
   return (
-    <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-full">
+    <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm h-full">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-bold text-[#2C1810]">Sales Overview</h3>

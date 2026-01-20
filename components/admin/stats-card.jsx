@@ -1,11 +1,11 @@
-import { ArrowUpRight, ArrowDownRight } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { ArrowDownRight, ArrowUpRight } from "lucide-react"
 
 export default function StatsCard({ title, value, change, trend, icon: Icon, description }) {
   const isUp = trend === "up"
 
   return (
-    <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 group">
+    <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 group">
       <div className="flex justify-between items-start">
         <div>
           <p className="text-sm font-medium text-gray-500">{title}</p>
@@ -13,7 +13,7 @@ export default function StatsCard({ title, value, change, trend, icon: Icon, des
             {value}
           </h3>
         </div>
-        <div className="p-3 bg-[#FDF8F3] rounded-xl group-hover:bg-[#2C1810] transition-colors duration-300">
+        <div className="p-3 bg-[#FDF8F3] rounded-lg group-hover:bg-[#2C1810] transition-colors duration-300">
           <Icon className="w-5 h-5 text-[#D4A574]" />
         </div>
       </div>

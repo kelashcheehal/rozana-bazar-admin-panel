@@ -7,16 +7,16 @@ import dynamic from "next/dynamic";
 
 // Dynamically import charts with loading skeletons
 const StatsCard = dynamic(() => import("@/components/admin/stats-card"), {
-  loading: () => <Skeleton className="h-32 w-full rounded-2xl" />,
+  loading: () => <Skeleton className="h-32 w-full rounded-lg" />,
 });
 const SalesChart = dynamic(() => import("@/components/admin/sales-chart"), {
-  loading: () => <Skeleton className="h-[400px] w-full rounded-2xl" />,
+  loading: () => <Skeleton className="h-[400px] w-full rounded-lg" />,
 });
 const RecentOrders = dynamic(() => import("@/components/admin/recent-orders"), {
-  loading: () => <Skeleton className="h-[400px] w-full rounded-2xl" />,
+  loading: () => <Skeleton className="h-[400px] w-full rounded-lg" />,
 });
 const TopProducts = dynamic(() => import("@/components/admin/top-products"), {
-  loading: () => <Skeleton className="h-[400px] w-full rounded-2xl" />,
+  loading: () => <Skeleton className="h-[400px] w-full rounded-lg" />,
 });
 
 export default function DashboardPage() {
@@ -56,7 +56,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {isLoading ? (
             Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-32 w-full rounded-2xl" />
+                <Skeleton key={i} className="h-32 w-full rounded-lg" />
             ))
         ) : (
             <>

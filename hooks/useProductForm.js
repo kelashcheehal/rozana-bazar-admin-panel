@@ -28,7 +28,7 @@ export const useProductForm = (initialData = null) => {
         sizes: [],
         colors: [],
         care_instructions: "",
-        status: "draft",
+        status: "live",
     });
 
     // Populate form if initialData is provided (Edit Mode)

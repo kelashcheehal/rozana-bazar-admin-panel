@@ -20,7 +20,7 @@ export default function TopProducts() {
     .slice(0, 4);
 
   return (
-    <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-full">
+    <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm h-full">
       <h3 className="text-lg font-bold text-[#2C1810] mb-1">Top Products</h3>
       <p className="text-sm text-gray-500 mb-6">
         Best selling items this month
@@ -30,7 +30,7 @@ export default function TopProducts() {
         {topProducts.map((product) => (
           <div
             key={product.id}
-            className="flex items-center gap-4 p-2 hover:bg-gray-50 rounded-xl transition-colors group cursor-pointer"
+            className="flex items-center gap-4 p-2 hover:bg-gray-50 rounded-lg transition-colors group cursor-pointer"
             onClick={() => route.push(`/dashboard/products/${product.slug}`)}
           >
             <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden relative">
@@ -59,7 +59,7 @@ export default function TopProducts() {
         ))}
       </div>
       <button
-        className="w-full mt-6 py-2.5 text-sm font-medium text-[#2C1810] border border-gray-200 rounded-xl hover:bg-[#2C1810] hover:text-[#D4A574] hover:border-[#2C1810] transition-all duration-300"
+        className="w-full mt-6 py-2.5 text-sm font-medium text-[#2C1810] border border-gray-200 rounded-lg hover:bg-[#2C1810] hover:text-[#D4A574] hover:border-[#2C1810] transition-all duration-300"
         onClick={navigateAllProducts}
       >
         View All Products

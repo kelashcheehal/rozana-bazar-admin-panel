@@ -56,7 +56,7 @@ export default function RecentOrders({ orders }) {
   const displayOrders = orders && orders.length > 0 ? orders : defaultOrders;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
       <div className="p-6 flex items-center justify-between border-b border-gray-100">
         <div>
           <h3 className="text-lg font-bold text-[#2C1810]">Recent Orders</h3>

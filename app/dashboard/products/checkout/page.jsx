@@ -43,7 +43,7 @@ export default function CheckoutPage() {
   if (orderPlaced) {
     return (
       <div className="p-6 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <div className="max-w-md mx-auto bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center space-y-4">
+        <div className="max-w-md mx-auto bg-white rounded-lg shadow-sm border border-gray-100 p-8 text-center space-y-4">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
             <Check className="w-8 h-8 text-green-600" />
           </div>
@@ -71,7 +71,7 @@ export default function CheckoutPage() {
         <div className="lg:col-span-2 space-y-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Shipping Information */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 space-y-4">
               <h2 className="text-lg font-bold text-[#2C1810]">Shipping Address</h2>
               <div className="grid grid-cols-2 gap-4">
                 <input
@@ -143,7 +143,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* Payment Information */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 space-y-4">
               <h2 className="text-lg font-bold text-[#2C1810]">Payment Method</h2>
               <input
                 type="text"
@@ -186,7 +186,7 @@ export default function CheckoutPage() {
         </div>
 
         {/* Order Summary */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-fit space-y-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 h-fit space-y-4">
           <h2 className="text-lg font-bold text-[#2C1810]">Order Summary</h2>
           <div className="space-y-3 max-h-64 overflow-y-auto">
             {MOCK_ORDER_ITEMS.map((item) => (

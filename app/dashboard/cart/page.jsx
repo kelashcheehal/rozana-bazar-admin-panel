@@ -48,7 +48,7 @@ export default function CartPage() {
       <h1 className="text-3xl font-bold text-[#2C1810]">Shopping Cart</h1>
 
       {cartItems.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-12 text-center">
           <p className="text-gray-500 mb-4">Your cart is empty</p>
           <Link href="/products" className="text-[#D4A574] hover:text-[#D4A574]/80 font-medium">
             Continue Shopping
@@ -59,7 +59,7 @@ export default function CartPage() {
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
             {cartItems.map((item) => (
-              <div key={item.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex gap-4">
+              <div key={item.id} className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 flex gap-4">
                 <img
                   src={item.image || "/placeholder.svg"}
                   alt={item.name}
@@ -99,7 +99,7 @@ export default function CartPage() {
           </div>
 
           {/* Order Summary */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-fit space-y-4">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 h-fit space-y-4">
             <h2 className="text-lg font-bold text-[#2C1810]">Order Summary</h2>
             <div className="space-y-2 border-b border-gray-200 pb-4">
               <div className="flex justify-between text-gray-600">
