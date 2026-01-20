@@ -1,21 +1,21 @@
 "use client";
 import {
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Area,
-  AreaChart,
+    Area,
+    AreaChart,
+    CartesianGrid,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
 } from "recharts";
 import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "../ui/select";
-const data = [
+const defaultData = [
   { name: "Jan", value: 2400 },
   { name: "Feb", value: 1398 },
   { name: "Mar", value: 9800 },
@@ -25,7 +25,8 @@ const data = [
   { name: "Jul", value: 4300 },
 ];
 
-export default function SalesChart() {
+export default function SalesChart({ data }) {
+  const chartData = data && data.length > 0 ? data : defaultData;
   return (
     <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-full">
       <div className="flex items-center justify-between mb-6">
@@ -68,7 +69,7 @@ export default function SalesChart() {
       </div>
       <div className="h-[300px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data}>
+          <AreaChart data={chartData}>
             <defs>
               <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#D4A574" stopOpacity={0.3} />

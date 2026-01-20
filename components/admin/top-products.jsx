@@ -1,8 +1,8 @@
 "use client";
 
 import { useProducts } from "@/lib/useProducts";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 export default function TopProducts() {
   const route = useRouter();
   const { data: products, isLoading, error } = useProducts(); // hook se data
@@ -29,28 +29,29 @@ export default function TopProducts() {
       <div className="space-y-4">
         {topProducts.map((product) => (
           <div
-            key={product.id} // id ko key ke liye use kare
-            className="flex items-center gap-4 p-2 hover:bg-gray-50 rounded-xl transition-colors group"
+            key={product.id}
+            className="flex items-center gap-4 p-2 hover:bg-gray-50 rounded-xl transition-colors group cursor-pointer"
+            onClick={() => route.push(`/dashboard/products/${product.slug}`)}
           >
-            <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden">
-              <img
-                src={product.images[0] || "/placeholder.svg"}
-                className="h-10 w-10 rounded object-cover"
+            <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden relative">
+              <Image
+                src={product.image_urls[0] || "/placeholder.svg"}
                 alt={product.name}
-                width={48}
-                height={48}
+                fill
+                className="object-cover"
+                sizes="48px"
                 loading="lazy"
               />
             </div>
-            <div className="flex-1">
-              <h4 className="font-medium text-[#2C1810] text-sm">
+            <div className="flex-1 min-w-0">
+              <h4 className="font-medium text-[#2C1810] text-sm truncate">
                 {product.name}
               </h4>
-              <p className="text-xs text-gray-500">{product.category}</p>
+              <p className="text-xs text-gray-500 truncate">{product.category}</p>
             </div>
-            <div className="text-right">
+            <div className="text-right whitespace-nowrap">
               <p className="font-bold text-[#D4A574] text-sm">
-                {product.price}
+                PKR {Number(product.finalPrice || product.price).toLocaleString()}
               </p>
               <p className="text-xs text-gray-400">{product.sold} sold</p>
             </div>

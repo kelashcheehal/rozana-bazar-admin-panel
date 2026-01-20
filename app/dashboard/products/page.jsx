@@ -1,23 +1,29 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { Plus, Edit, Trash2, Eye } from "lucide-react";
-import Link from "next/link";
+import { Skeleton } from "@/components/Skeleton";
+import Pagination from "@/components/admin/Pagination";
+import ProductFilters from "@/components/product-components/ProductFilters";
 import { supabase } from "@/lib/supabaseClient";
-import { useRouter } from "next/navigation";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import { Package } from "lucide-react";
-import { AlertTriangle } from "lucide-react";
-import { XCircle } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { AlertTriangle, Edit, Eye, Package, Plus, Trash2, XCircle } from "lucide-react";
+import Image from 'next/image';
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useState } from "react";
+
 const PAGE_SIZE = 25;
+
 
 export default function ProductsPage() {
   const router = useRouter();
-  const [page, setPage] = useState(0);
+  const searchParams = useSearchParams();
+  const page = Number(searchParams.get("page")) || 1;
   const [deletingIds, setDeletingIds] = useState(new Set()); // Track deleting products by ID
   const queryClient = useQueryClient();
-
+  const limit = PAGE_SIZE;
+  const search = searchParams.get("search") || "";
+  const status = searchParams.get("status") || "all";
   const handleView = useCallback(
     (slug) => router.push(`/dashboard/products/${slug}`),
     [router]
@@ -48,9 +54,10 @@ export default function ProductsPage() {
         // Invalidate and refetch queries
         queryClient.invalidateQueries(["products"]);
         queryClient.invalidateQueries(["productStats"]);
+        toast.success("Product deleted successfully");
       } catch (err) {
         console.error("Delete Error:", err);
-        alert("Failed to delete product. Please try again.");
+        toast.error("Failed to delete product. Please try again.");
       } finally {
         setDeletingIds((prev) => {
           const newSet = new Set(prev);
@@ -68,14 +75,14 @@ export default function ProductsPage() {
 
     if (error) throw error;
 
-    const totalProducts = data.filter((p) => p.stock >=0).length;
+    const totalProducts = data.filter((p) => p.stock >= 0).length;
     const lowStock = data.filter((p) => p.stock > 0 && p.stock <= 10).length;
     const outOfStock = data.filter((p) => p.stock === 0).length;
 
     return { totalProducts, lowStock, outOfStock };
   };
 
-  const { data: stats = { totalProducts: 0, lowStock: 0, outOfStock: 0 } } =
+  const { data: stats = { totalProducts: 0, lowStock: 0, outOfStock: 0 }, isLoading: statsLoading } =
     useQuery({
       queryKey: ["productStats"],
       queryFn: fetchProductStats,
@@ -84,25 +91,46 @@ export default function ProductsPage() {
 
   // Fetch products using TanStack Query
   const fetchProducts = async ({ queryKey }) => {
-    const [_key, page] = queryKey;
-    const from = page * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
+    const [_key, { page, search, status, limit }] = queryKey;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
-    const { data, error } = await supabase
+    let query = supabase
       .from("products")
-      .select("*")
-      .order("created_at", { ascending: false }) // Changed to descending for latest first
+      .select("*", { count: "exact" })
+      .order("created_at", { ascending: false })
       .range(from, to);
+
+    if (search) {
+      query = query.ilike("name", `%${search}%`);
+    }
+
+    if (status && status !== "all") {
+      query = query.eq("status", status);
+    }
+
+    const { data, error, count } = await query;
 
     if (error) throw error;
 
-    return (data || []).map((p) => {
+    const products = (data || []).map((p) => {
       let images = [];
       try {
-        images = p.image_urls ? JSON.parse(p.image_urls) : [];
+        if (Array.isArray(p.image_urls)) {
+          images = p.image_urls;
+        } else if (typeof p.image_urls === "string") {
+          try {
+            images = JSON.parse(p.image_urls);
+          } catch {
+            images = [p.image_urls].filter(Boolean); // If not JSON, assume single URL string? Or split by comma? safely just arraywrap
+          }
+        }
       } catch (e) {
-        console.warn("Failed to parse image_urls for product", p.id, e);
+        images = [];
       }
+
+      // Additional safety: ensure images is array
+      if (!Array.isArray(images)) images = [];
 
       const price = Number(p.price) || 0;
       const discount = Number(p.discount) || 0;
@@ -110,18 +138,24 @@ export default function ProductsPage() {
 
       return { ...p, images, finalPrice };
     });
+
+    return { products, totalCount: count };
   };
 
   const {
-    data: products = [],
+    data: { products = [], totalCount = 0 } = {},
     isLoading,
     isError,
     error,
   } = useQuery({
-    queryKey: ["products", page],
+    queryKey: ["products", { page, search, status, limit }],
     queryFn: fetchProducts,
     keepPreviousData: true,
   });
+
+  console.log(products);
+
+  const totalPages = Math.ceil(totalCount / limit);
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -130,44 +164,58 @@ export default function ProductsPage() {
         <div>
           <h1 className="text-2xl font-bold text-[#2C1810]">Products</h1>
           <p className="text-gray-500">Manage your product inventory</p>
+
         </div>
         <Link
           href="/dashboard/products/add-product"
           className="bg-[#f5f5f5] text-black text-sm px-4 py-2 rounded flex items-center gap-2"
         >
+
           <Plus size={18} /> Add New Product
         </Link>
       </div>
 
+      <ProductFilters />
+
       {/* Stats */}
       <div className="flex items-center gap-4 p-4 overflow-x-auto min-w-ful flex-wrap md:flex-nowrap bg-gray-50">
-        <div className="flex items-center gap-1">
-          <span
-            className="inline-flex items-center justify-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-medium whitespace-nowrap"
-            aria-label={`${stats.totalProducts} live products`}
-          >
-            <Package className="h-4 w-4 text-green-600" />
-            {stats.totalProducts} Live Products
-          </span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span
-            className="inline-flex items-center justify-center gap-1 px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-sm font-medium whitespace-nowrap"
-            aria-label={`${stats.lowStock} products with low stock`}
-          >
-            <AlertTriangle className="h-4 w-4 text-yellow-600" />
-            {stats.lowStock} Low Stock
-          </span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span
-            className="inline-flex items-center justify-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-800 text-sm font-medium whitespace-nowrap"
-            aria-label={`${stats.outOfStock} products out of stock`}
-          >
-            <XCircle className="h-4 w-4 text-red-600" />
-            {stats.outOfStock} Out of Stock
-          </span>
-        </div>
+        {statsLoading ? (
+            <>
+                <Skeleton className="h-8 w-40 rounded-full" />
+                <Skeleton className="h-8 w-40 rounded-full" />
+                <Skeleton className="h-8 w-40 rounded-full" />
+            </>
+        ) : (
+            <>
+                <div className="flex items-center gap-1">
+                <span
+                    className="inline-flex items-center justify-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-medium whitespace-nowrap"
+                    aria-label={`${stats.totalProducts} live products`}
+                >
+                    <Package className="h-4 w-4 text-green-600" />
+                    {stats.totalProducts} Live Products
+                </span>
+                </div>
+                <div className="flex items-center gap-1">
+                <span
+                    className="inline-flex items-center justify-center gap-1 px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-sm font-medium whitespace-nowrap"
+                    aria-label={`${stats.lowStock} products with low stock`}
+                >
+                    <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                    {stats.lowStock} Low Stock
+                </span>
+                </div>
+                <div className="flex items-center gap-1">
+                <span
+                    className="inline-flex items-center justify-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-800 text-sm font-medium whitespace-nowrap"
+                    aria-label={`${stats.outOfStock} products out of stock`}
+                >
+                    <XCircle className="h-4 w-4 text-red-600" />
+                    {stats.outOfStock} Out of Stock
+                </span>
+                </div>
+            </>
+        )}
       </div>
 
       {/* Table */}
@@ -198,13 +246,35 @@ export default function ProductsPage() {
             </thead>
 
             <tbody>
-              {isLoading && (
-                <tr>
-                  <td colSpan="6" className="py-6 text-center text-gray-500">
-                    Loading products...
-                  </td>
-                </tr>
-              )}
+              {isLoading && Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="bg-gray-50/50">
+                    <td className="px-3 py-2">
+                        <div className="flex gap-3">
+                            <Skeleton className="h-10 w-10 rounded" />
+                            <div className="flex flex-col gap-2">
+                                <Skeleton className="h-4 w-32" />
+                                <Skeleton className="h-3 w-24" />
+                            </div>
+                        </div>
+                    </td>
+                    <td className="px-6 py-4"><Skeleton className="h-6 w-20 rounded-full" /></td>
+                    <td className="px-6 py-4">
+                        <div className="flex flex-col gap-1">
+                            <Skeleton className="h-3 w-16" />
+                            <Skeleton className="h-4 w-20" />
+                        </div>
+                    </td>
+                    <td className="px-6 py-4"><Skeleton className="h-6 w-24 rounded" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-6 w-16 rounded" /></td>
+                    <td className="px-6 py-4">
+                        <div className="flex justify-end gap-2">
+                            <Skeleton className="h-8 w-8 rounded" />
+                            <Skeleton className="h-8 w-8 rounded" />
+                            <Skeleton className="h-8 w-8 rounded" />
+                        </div>
+                    </td>
+                  </tr>
+              ))}
 
               {isError && (
                 <tr>
@@ -232,11 +302,12 @@ export default function ProductsPage() {
                   {/* Product Info */}
                   <td className="px-3 py-2 text-right rounded">
                     <div className="flex gap-3">
-                      <img
+                      <Image
                         src={product.images[0] || "/placeholder.svg"}
+                        width={40}
+                        height={40}
                         className="h-10 w-10 rounded object-cover"
                         alt={product.name}
-                        loading="lazy"
                       />
                       <div className="flex flex-col text-left max-w-[280px] pr-5">
                         <span className="text-sm text-[#2C1810] w-full truncate">
@@ -284,15 +355,15 @@ export default function ProductsPage() {
                         product.stock === 0
                           ? "bg-red-200 text-red-600"
                           : product.stock <= 10
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-green-100 text-green-700"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-green-100 text-green-700"
                       )}
                     >
                       {product.stock === 0
                         ? "Out of Stock"
                         : product.stock <= 10
-                        ? `Only ${product.stock} left`
-                        : "In Stock"}
+                          ? `Only ${product.stock} left`
+                          : "In Stock"}
                     </span>
                   </td>
 
@@ -344,27 +415,8 @@ export default function ProductsPage() {
         </div>
 
         {/* Pagination */}
-        <div className="px-6 py-4 border-t flex justify-between items-center">
-          <span className="text-sm text-gray-500">
-            Showing {page * PAGE_SIZE + 1} to{" "}
-            {page * PAGE_SIZE + products.length}
-          </span>
-          <div className="flex gap-2">
-            <button
-              disabled={page === 0 || isLoading}
-              onClick={() => setPage((p) => p - 1)}
-              className="px-3 text-sm tracking-wider py-1 bg-[#ffffff] cursor-pointer rounded disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <button
-              disabled={products.length < PAGE_SIZE || isLoading}
-              onClick={() => setPage((p) => p + 1)}
-              className="px-3 text-sm tracking-wider py-1 bg-[#ffffff] cursor-pointer rounded disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
+        <div className="px-6 py-4 border-t">
+          <Pagination totalPages={totalPages} />
         </div>
       </div>
     </div>

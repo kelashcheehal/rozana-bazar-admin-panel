@@ -1,6 +1,6 @@
-import { MoreHorizontal } from "lucide-react"
+import { MoreHorizontal } from "lucide-react";
 
-const orders = [
+const defaultOrders = [
   {
     id: "#ORD-3201",
     customer: "Alex Morgan",
@@ -48,9 +48,13 @@ const statusStyles = {
   Processing: "bg-blue-100 text-blue-700",
   Pending: "bg-yellow-100 text-yellow-700",
   Cancelled: "bg-red-100 text-red-700",
+  Delivered: "bg-green-100 text-green-700", // Add Delivered just in case
+  Shipped: "bg-blue-100 text-blue-700",
 }
 
-export default function RecentOrders() {
+export default function RecentOrders({ orders }) {
+  const displayOrders = orders && orders.length > 0 ? orders : defaultOrders;
+
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="p-6 flex items-center justify-between border-b border-gray-100">
@@ -76,7 +80,7 @@ export default function RecentOrders() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {orders.map((order) => (
+            {displayOrders.map((order) => (
               <tr key={order.id} className="hover:bg-gray-50/50 transition-colors">
                 <td className="px-6 py-4 font-medium text-[#2C1810]">{order.id}</td>
                 <td className="px-6 py-4 text-gray-600">{order.customer}</td>

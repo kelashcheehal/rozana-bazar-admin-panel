@@ -1,22 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  ShoppingBag,
-  Users,
-  Settings,
-  Package,
-  MessageSquare,
-  BarChart,
-  LogOut,
-  X,
-  Menu,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useClerk } from "@clerk/nextjs";
+import {
+  BarChart,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  MessageSquare,
+  Package,
+  Settings,
+  ShoppingBag,
+  Users,
+  X,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const sidebarItems = [
   { icon: LayoutDashboard, label: "Homepage", href: "/dashboard" },
@@ -93,7 +93,10 @@ export default function Sidebar() {
             </div>
             {sidebarItems.map((item) => {
               const Icon = item.icon;
-              const isActive = pathname === item.href;
+              const isActive =
+                item.href === "/dashboard"
+                  ? pathname === "/dashboard"
+                  : pathname.startsWith(item.href);
               return (
                 <Link
                   key={item.href}

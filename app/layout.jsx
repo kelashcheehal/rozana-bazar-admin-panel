@@ -2,6 +2,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { Jost } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Toaster } from "@/components/ui/sonner";
 import "../styles/colors.css"
 const jost = Jost({
   subsets: ["latin"],
@@ -23,6 +24,7 @@ export default function RootLayout({ children }) {
         >
           {children}
           <Analytics />
+          <Toaster />
         </ClerkProvider>
       </body>
     </html>

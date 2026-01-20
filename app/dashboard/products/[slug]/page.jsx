@@ -1,34 +1,30 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Image from "next/image";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-
+import { useMemo } from "react";
 import AdminBreadcrumb from "@/components/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { MapPin } from "lucide-react";
 
+import ActionButtons from "@/components/product-components/ActionButtons";
+import BrandStats from "@/components/product-components/BrandStats";
+import ColorSelector from "@/components/product-components/ColorSelector";
+import ProductDetailsAccordion from "@/components/product-components/DescriptionAccordian";
 import MainImage from "@/components/product-components/MainImage";
 import ProductHeader from "@/components/product-components/ProductHeader";
-import ColorSelector from "@/components/product-components/ColorSelector";
 import SizeSelector from "@/components/product-components/SizeSelector";
-import ActionButtons from "@/components/product-components/ActionButtons";
-import ProductDetailsAccordion from "@/components/product-components/DescriptionAccordian";
-import BrandStats from "@/components/product-components/BrandStats";
-import RelatedProducts from "@/components/product-components/RelatedProducts";
+// import RelatedProducts from "@/components/product-components/RelatedProducts";
 
 import { useProducts } from "@/lib/useProducts";
 
 export default function ProductDetailPage() {
-  const { data: products } = useProducts();
+  const { data: products, isLoading: productsLoading } = useProducts();
   const { slug } = useParams();
   const router = useRouter();
 
-  const [product, setProduct] = useState(null);
-  const [relatedProducts, setRelatedProducts] = useState([]);
   const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [selectedColor, setSelectedColor] = useState({});
   const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -36,18 +32,12 @@ export default function ProductDetailPage() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [pincode, setPincode] = useState("");
 
-  useEffect(() => {
-    if (!products) return;
-
+  const parsedProduct = useMemo(() => {
+    if (!products) return null;
     const foundProduct = products.find((p) => String(p.slug) === String(slug));
-    if (!foundProduct) {
-      toast.error("Product not found");
-      router.push("/products");
-      return;
-    }
+    if (!foundProduct) return null;
 
-    // Parse JSON fields
-    const parsedProduct = {
+    return {
       ...foundProduct,
       materials: Array.isArray(foundProduct.materials)
         ? foundProduct.materials
@@ -65,13 +55,30 @@ export default function ProductDetailPage() {
       discount_price: Number(foundProduct.discount_price),
       discount: Number(foundProduct.discount),
     };
+  }, [products, slug]);
 
-    setProduct(parsedProduct);
-    setSelectedColor(parsedProduct.colors[0] || {});
-    setSelectedSize(parsedProduct.sizes[0] || "");
+  // Redirect if not found after loading
+  useEffect(() => {
+    if (!productsLoading && products && !parsedProduct) {
+      toast.error("Product not found");
+      router.push("/dashboard/products");
+    }
+  }, [productsLoading, products, parsedProduct, router]);
 
-    // Related products (same category, excluding this product)
-    const related = products
+  // Initialize selection when product loads
+  useEffect(() => {
+    if (parsedProduct) {
+      // Only set if not already set or if product changed (check id/slug)
+      if (!selectedColor.image) { // Weak check, but robust enough for initial load
+        setSelectedColor(parsedProduct.colors[0] || {});
+        setSelectedSize(parsedProduct.sizes[0] || "");
+      }
+    }
+  }, [parsedProduct]); // Depending on parsedProduct is safe if memoized
+
+  const relatedProducts = useMemo(() => {
+    if (!parsedProduct || !products) return [];
+    return products
       .filter(
         (p) =>
           p.category === parsedProduct.category && p.slug !== parsedProduct.slug
@@ -93,9 +100,9 @@ export default function ProductDetailPage() {
         discount_price: Number(p.discount_price),
         discount: Number(p.discount),
       }));
+  }, [products, parsedProduct]);
 
-    setRelatedProducts(related);
-
+  useEffect(() => {
     // Mock reviews
     const mockReviews = [
       {
@@ -126,17 +133,15 @@ export default function ProductDetailPage() {
       },
     ];
     setReviews(mockReviews);
-
-    setLoading(false);
-  }, [products, slug, router]);
+  }, []);
 
   const handleAddToCart = useCallback(() => {
     if (!selectedSize) {
       toast.error("Please select a size");
       return;
     }
-    toast.success(`${quantity} × ${product.name} added to cart`);
-  }, [product, selectedSize, quantity]);
+    toast.success(`${quantity} × ${parsedProduct.name} added to cart`);
+  }, [parsedProduct, selectedSize, quantity]);
 
   const handleBuyNow = useCallback(() => {
     if (!selectedSize) {
@@ -144,9 +149,9 @@ export default function ProductDetailPage() {
       return;
     }
     router.push(
-      `/checkout?product=${id}&size=${selectedSize}&color=${selectedColor.colorName}&quantity=${quantity}`
+      `/checkout?product=${parsedProduct.id}&size=${selectedSize}&color=${selectedColor.colorName}&quantity=${quantity}`
     );
-  }, [slug, router, selectedSize, selectedColor, quantity]);
+  }, [parsedProduct, router, selectedSize, selectedColor, quantity]);
 
   const toggleFavorite = useCallback(() => {
     setIsFavorite((prev) => !prev);
@@ -161,7 +166,7 @@ export default function ProductDetailPage() {
     toast.success(`Delivery available to ${pincode} in 3-5 business days`);
   }, [pincode]);
 
-  if (loading) {
+  if (productsLoading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
@@ -169,7 +174,7 @@ export default function ProductDetailPage() {
     );
   }
 
-  if (!product) {
+  if (!parsedProduct) {
     return (
       <div className="text-center py-20">
         <h2 className="text-2xl font-semibold text-gray-700">
@@ -183,13 +188,13 @@ export default function ProductDetailPage() {
   }
 
   const discountPercentage =
-    product.discount > 0 ? Math.round(product.discount) : 0;
-  const discountedPrice = product.discount_price || product.price;
+    parsedProduct.discount > 0 ? Math.round(parsedProduct.discount) : 0;
+  const discountedPrice = parsedProduct.discount_price || parsedProduct.price;
   const averageRating =
     reviews.length > 0
       ? (
-          reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-        ).toFixed(1)
+        reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+      ).toFixed(1)
       : "5.0";
 
   return (
@@ -197,29 +202,40 @@ export default function ProductDetailPage() {
       <AdminBreadcrumb
         items={[
           { label: "Products", href: "/dashboard/products" },
-          { label: product.name },
+          { label: parsedProduct.name },
         ]}
       />
 
       {/* MOBILE IMAGE CAROUSEL */}
+      {/* MOBILE IMAGE CAROUSEL */}
       <div className="lg:hidden -mx-4 mb-8">
+        {/* First: Selected color image */}
+        {selectedColor?.image && (
+          <div className="relative w-full h-[90vw] overflow-hidden bg-gray-50 mb-4">
+            <img
+              src={selectedColor.image}
+              alt={`${parsedProduct.name} - Selected Color`}
+              className="object-cover w-full h-full"
+            />
+          </div>
+        )}
+
+        {/* Rest of the images */}
         <div className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth">
-          {product.image_urls.map((image, index) => (
-            <div
-              key={index}
-              className="relative min-w-full h-[90vw] overflow-hidden snap-center bg-gray-50"
-            >
-              <img
-                src={
-                  index === 0 && selectedColor.image
-                    ? selectedColor.image
-                    : image
-                }
-                alt={`${product.name} ${index + 1}`}
-                className="object-cover"
-              />
-            </div>
-          ))}
+          {parsedProduct.image_urls
+            .filter((img) => img !== selectedColor?.image) // exclude selected color
+            .map((image, index) => (
+              <div
+                key={index}
+                className="relative min-w-full h-[90vw] overflow-hidden snap-center bg-gray-50 mr-2"
+              >
+                <img
+                  src={image}
+                  alt={`${parsedProduct.name} ${index + 1}`}
+                  className="object-cover w-full h-full"
+                />
+              </div>
+            ))}
         </div>
       </div>
 
@@ -227,7 +243,7 @@ export default function ProductDetailPage() {
         {/* Desktop Images */}
         <div className="hidden lg:block">
           <MainImage
-            product={product}
+            product={parsedProduct}
             selectedColor={selectedColor}
             selectedImageIndex={selectedImageIndex}
             setSelectedImageIndex={setSelectedImageIndex}
@@ -240,7 +256,7 @@ export default function ProductDetailPage() {
         <div className="space-y-6 relative">
           <div className="space-y-6 sticky top-24">
             <ProductHeader
-              product={product}
+              product={parsedProduct}
               reviews={reviews}
               averageRating={averageRating}
               discountedPrice={discountedPrice}
@@ -248,34 +264,34 @@ export default function ProductDetailPage() {
             />
 
             <ColorSelector
-              product={product}
+              product={parsedProduct}
               selectedColor={selectedColor}
               setSelectedColor={setSelectedColor}
               setSelectedImageIndex={setSelectedImageIndex}
             />
 
             <SizeSelector
-              product={product}
+              product={parsedProduct}
               selectedSize={selectedSize}
               setSelectedSize={setSelectedSize}
             />
 
             <ActionButtons
-              product={product}
+              product={parsedProduct}
               handleAddToCart={handleAddToCart}
               handleBuyNow={handleBuyNow}
               isFavorite={isFavorite}
               toggleFavorite={toggleFavorite}
             />
 
-            <ProductDetailsAccordion product={product} />
+            <ProductDetailsAccordion product={parsedProduct} />
           </div>
         </div>
       </div>
 
-      <RelatedProducts relatedProducts={relatedProducts} />
+      {/* <RelatedProducts relatedProducts={relatedProducts} /> */}
 
-      <BrandStats product={product} />
+      <BrandStats product={parsedProduct} />
 
       {/* Find Store Section */}
       <div className="mt-12 p-6 bg-blue-50 rounded-lg">

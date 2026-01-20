@@ -14,14 +14,12 @@ export default function MainImage({
   const discountPercentage =
     product.discount > 0 ? Math.round(product.discount) : 0;
 
+  const mainImage =
+    selectedColor?.image_url || product?.image_urls?.[selectedImageIndex];
   return (
     <div className="hidden lg:block">
       <div className="relative overflow-hidden bg-gray-50 aspect-square">
-        <img
-          src={selectedColor?.image || product.image_urls[selectedImageIndex]}
-          alt={product.name}
-          className="object-cover"
-        />
+        <img src={mainImage} alt={product.name} className="object-cover" />
 
         <div className="absolute top-4 left-4 flex flex-col gap-2">
           {discountPercentage > 0 && (
@@ -47,7 +45,28 @@ export default function MainImage({
           />
         </button>
       </div>
+      <div className="lg:hidden -mx-4 mb-8">
+        <div className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth">
+          {product.image_urls.map((image, index) => {
+            // Show selected color image if it's the first image
+            const displayImage =
+              index === 0 && selectedColor?.image ? selectedColor.image : image;
 
+            return (
+              <div
+                key={index}
+                className="relative min-w-full h-[90vw] overflow-hidden snap-center bg-gray-50"
+              >
+                <img
+                  src={displayImage}
+                  alt={`${product.name} ${index + 1}`}
+                  className="object-cover w-full h-full"
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
       {/* Vertical Images */}
       <div>
         {product.image_urls.map((image, index) => (

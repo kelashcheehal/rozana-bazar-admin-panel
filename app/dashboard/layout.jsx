@@ -2,6 +2,7 @@
 
 import "@/app/globals.css";
 import Header from "@/components/admin/header";
+import AdminBreadcrumb from "@/components/breadcrumb";
 import Sidebar from "@/components/admin/sidebar";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { Jost } from "next/font/google";

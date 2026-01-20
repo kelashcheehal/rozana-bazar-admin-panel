@@ -151,4 +151,52 @@
     overflow-y: auto;
     overflow-x: hidden;
   }
+
+  /* In your global.css or component styles */
+
+  :root {
+    /* Your existing theme variables */
+  }
+
+  /* Shimmer Animation */
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s infinite linear;
+  }
+
+  /* Pulse Animation */
+  @keyframes pulse-light {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  .animate-pulse-light {
+    animation: pulse-light 1.5s ease-in-out infinite;
+  }
+}
+
+/* Custom utilities */
+@layer utilities {
+  .skeleton-gradient {
+    background: linear-gradient(
+      90deg,
+      rgba(229, 231, 235, 0.8) 0%,
+      rgba(243, 244, 246, 0.9) 50%,
+      rgba(229, 231, 235, 0.8) 100%
+    );
+    background-size: 200% 100%;
+  }
 }

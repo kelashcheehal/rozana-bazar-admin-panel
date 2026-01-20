@@ -20,7 +20,7 @@ export default function AdminBreadcrumb({ items = [] }) {
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
             <Link
-              href="/admin/dashboard"
+              href="/dashboard"
               className="hover:text-[#D4A574] transition-colors"
             >
               Dashboard

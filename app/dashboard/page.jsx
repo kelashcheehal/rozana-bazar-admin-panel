@@ -1,18 +1,39 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { Skeleton } from "@/components/Skeleton";
+import { useDashboardStats } from "@/hooks/useDashboardStats";
+import { Activity, DollarSign, ShoppingBag, Users } from "lucide-react";
+import dynamic from "next/dynamic";
 
-import StatsCard from "@/components/admin/stats-card";
-import SalesChart from "@/components/admin/sales-chart";
-import RecentOrders from "@/components/admin/recent-orders";
-import TopProducts from "@/components/admin/top-products";
-
-import { DollarSign, Users, ShoppingBag, Activity } from "lucide-react";
+// Dynamically import charts with loading skeletons
+const StatsCard = dynamic(() => import("@/components/admin/stats-card"), {
+  loading: () => <Skeleton className="h-32 w-full rounded-2xl" />,
+});
+const SalesChart = dynamic(() => import("@/components/admin/sales-chart"), {
+  loading: () => <Skeleton className="h-[400px] w-full rounded-2xl" />,
+});
+const RecentOrders = dynamic(() => import("@/components/admin/recent-orders"), {
+  loading: () => <Skeleton className="h-[400px] w-full rounded-2xl" />,
+});
+const TopProducts = dynamic(() => import("@/components/admin/top-products"), {
+  loading: () => <Skeleton className="h-[400px] w-full rounded-2xl" />,
+});
 
 export default function DashboardPage() {
+  const { data, isLoading } = useDashboardStats();
+  const stats = data?.stats;
+  const recentOrders = data?.recentOrders;
+  const chartData = data?.chartData;
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(amount);
+  };
+
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4  duration-700 text-[#2C1810]">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 text-[#2C1810]">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -33,44 +54,52 @@ export default function DashboardPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatsCard
-          title="Total Revenue"
-          value="$54,239"
-          change="+12.5%"
-          trend="up"
-          icon={DollarSign}
-          description="vs. last month"
-        />
-        <StatsCard
-          title="Total Orders"
-          value="1,253"
-          change="+8.2%"
-          trend="up"
-          icon={ShoppingBag}
-          description="vs. last month"
-        />
-        <StatsCard
-          title="New Customers"
-          value="342"
-          change="-2.4%"
-          trend="down"
-          icon={Users}
-          description="vs. last month"
-        />
-        <StatsCard
-          title="Active Now"
-          value="573"
-          change="+24"
-          trend="up"
-          icon={Activity}
-          description="users online"
-        />
+        {isLoading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-32 w-full rounded-2xl" />
+            ))
+        ) : (
+            <>
+                <StatsCard
+                title="Total Revenue"
+                value={formatCurrency(stats?.revenue.value || 0)}
+                change={stats?.revenue.change}
+                trend={stats?.revenue.trend}
+                icon={DollarSign}
+                description="vs. last month"
+                />
+                <StatsCard
+                title="Total Orders"
+                value={stats?.orders.value.toLocaleString()}
+                change={stats?.orders.change}
+                trend={stats?.orders.trend}
+                icon={ShoppingBag}
+                description="vs. last month"
+                />
+                <StatsCard
+                title="New Customers"
+                value={stats?.customers.value.toLocaleString()}
+                change={stats?.customers.change}
+                trend={stats?.customers.trend}
+                icon={Users}
+                description="vs. last month"
+                />
+                <StatsCard
+                title="Active Now"
+                value={stats?.active.value}
+                change={stats?.active.change}
+                trend={stats?.active.trend}
+                icon={Activity}
+                description="users online"
+                />
+            </>
+        )}
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <SalesChart />
+          <SalesChart data={chartData} />
         </div>
         <div>
           <TopProducts />
@@ -78,7 +107,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent Orders */}
-      <RecentOrders />
+      <RecentOrders orders={recentOrders} />
     </div>
   );
 }
